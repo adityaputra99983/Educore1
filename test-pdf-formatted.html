@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Formatted PDF Generation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Formatted PDF Generation</h1>
+    <p>Click the button below to generate a formatted PDF report:</p>
+    
+    <button id="generateBtn">Generate Formatted PDF</button>
+    
+    <div id="result" class="result" style="display: none;">
+        <p>PDF Generated Successfully!</p>
+        <a id="downloadLink" href="#" download="formatted-report.pdf">Download PDF</a>
+    </div>
+
+    <script type="module">
+        // Import our PDF generator
+        import { generatePDFReport } from './src/utils/pdfGenerator.ts';
+        
+        document.getElementById('generateBtn').addEventListener('click', async function() {
+            try {
+                // Mock data for testing
+                const mockReportData = {
+                    attendanceStats: {
+                        totalStudents: 150,
+                        present: 120,
+                        late: 15,
+                        absent: 10,
+                        permission: 5,
+                        attendanceRate: 85.5
+                    },
+                    promotionStats: {
+                        promoted: 45,
+                        retained: 5,
+                        graduated: 30,
+                        undecided: 20
+                    },
+                    students: [
+                        { nis: '12345', name: 'Ahmad Rifai', class: 'XII-A', present: 28, late: 2, absent: 0, permission: 0, attendance: 93.33, promotionStatus: 'naik' },
+                        { nis: '12346', name: 'Budi Santoso', class: 'XII-B', present: 25, late: 3, absent: 2, permission: 0, attendance: 83.33, promotionStatus: 'tinggal' }
+                    ]
+                };
+
+                // Generate the PDF
+                const pdfBlob = await generatePDFReport(mockReportData, 'summary');
+                
+                // Create download link
+                const url = URL.createObjectURL(pdfBlob);
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.download = 'formatted-report.pdf';
+                
+                // Show result
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

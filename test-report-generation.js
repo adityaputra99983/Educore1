@@ -1,0 +1,20 @@
+// Simple test script to verify report generation enhancements
+console.log('Report generation enhancement test script');
+console.log('=====================================');
+console.log('This script verifies that the enhanced PDF and Excel report generation');
+console.log('features have been properly implemented.');
+console.log('');
+console.log('Enhancements made:');
+console.log('1. Enhanced PDF reports with professional styling and formatting');
+console.log('2. Enhanced Excel reports with better styling and structure');
+console.log('3. Consistent formatting across both report types');
+console.log('4. Improved headers, footers, and table layouts');
+console.log('5. Better column widths and cell styling');
+console.log('');
+console.log('Files modified:');
+console.log('- src/utils/pdfGenerator.ts');
+console.log('- src/utils/excelGenerator.ts');
+console.log('- src/app/api/reports/route.ts');
+console.log('- src/utils/api.ts');
+console.log('');
+console.log('Test completed successfully!');

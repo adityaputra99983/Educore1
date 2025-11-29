@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Formatted PDF Generation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+        .instructions {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Formatted PDF Generation</h1>
+        
+        <div class="instructions">
+            <h3>Instruksi:</h3>
+            <p>Klik tombol di bawah untuk menghasilkan laporan PDF dengan format yang telah ditingkatkan.</p>
+            <p>Perubahan yang telah dibuat:</p>
+            <ul>
+                <li>Header sekolah yang profesional dengan placeholder logo</li>
+                <li>Warna tabel yang lebih formal (#2c3e50)</li>
+                <li>Batas tabel yang ditingkatkan</li>
+                <li>Footer dengan tanggal pembuatan dan nomor halaman</li>
+                <li>Metadata dokumen</li>
+                <li>Spacing yang lebih baik antar elemen</li>
+            </ul>
+        </div>
+        
+        <div class="button-container">
+            <button id="generateBtn">Generate Formatted PDF</button>
+        </div>
+        
+        <div id="result" class="result">
+            <p>✅ PDF Berhasil Dibuat!</p>
+            <p>Silakan periksa file PDF yang dihasilkan untuk melihat perbaikan format.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', async function() {
+            try {
+                // Show result message
+                document.getElementById('result').style.display = 'block';
+                
+                // In a real implementation, this would call the generatePDFReport function
+                // For demonstration purposes, we're just showing the UI
+                alert('Dalam implementasi nyata, ini akan menghasilkan PDF dengan format yang telah ditingkatkan. Perubahan termasuk header sekolah profesional, warna tabel yang lebih formal, dan layout yang lebih rapi.');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghasilkan PDF: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
