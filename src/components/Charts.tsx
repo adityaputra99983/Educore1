@@ -11,7 +11,7 @@ import {
 } from "chart.js";
 
 // Import the components directly from the library
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar as BarChart, Pie as PieChart } from "react-chartjs-2";
 
 // Register chart.js modules
 ChartJS.register(
@@ -23,5 +23,6 @@ ChartJS.register(
   Legend
 );
 
-// Export the components directly
-export { Bar, Pie };
+// Export the components with explicit names
+export const Bar = BarChart;
+export const Pie = PieChart;
