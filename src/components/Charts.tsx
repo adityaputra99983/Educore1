@@ -1,24 +1,30 @@
 "use client";
 
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    ArcElement,
-    Tooltip,
-    Legend,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
 } from "chart.js";
 
-import { Bar, Pie } from "react-chartjs-2";
+// Import the components directly from the library
+import {
+  Bar as BarChart,
+  Pie as PieChart,
+} from "react-chartjs-2";
 
+// Register chart.js modules
 ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    ArcElement,
-    Tooltip,
-    Legend
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend
 );
 
-export { Bar, Pie };
+// Explicitly export the components
+export { BarChart as Bar, PieChart as Pie };
