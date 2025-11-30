@@ -642,6 +642,9 @@ const ReportsPage = () => {
                             Izin/Sakit
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Total Hari
+                          </th>
+                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                             Tingkat Kehadiran
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -668,9 +671,10 @@ const ReportsPage = () => {
                               {student.class}
                             </td>
                             <td className="px-4 py-3 text-center">{student.present || 0}</td>
-                            <td className="px-4 py-3 text-center">{student.late}</td>
-                            <td className="px-4 py-3 text-center">{student.absent}</td>
-                            <td className="px-4 py-3 text-center">{student.permission}</td>
+                            <td className="px-4 py-3 text-center">{student.late || 0}</td>
+                            <td className="px-4 py-3 text-center">{student.absent || 0}</td>
+                            <td className="px-4 py-3 text-center">{student.permission || 0}</td>
+                            <td className="px-4 py-3 text-center">{student.totalAttendanceDays || 0}</td>
                             <td className="px-4 py-3 text-center">
                               <span
                                 className={`text-xs px-2 py-1 rounded-full font-medium ${student.attendance >= 90
@@ -765,6 +769,9 @@ const ReportsPage = () => {
                             Izin/Sakit
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Total Hari
+                          </th>
+                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                             Tingkat Kehadiran
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -788,10 +795,11 @@ const ReportsPage = () => {
                               {classReport.class}
                             </td>
                             <td className="px-4 py-3 text-center">{classReport.totalStudents}</td>
-                            <td className="px-4 py-3 text-center">{classReport.present}</td>
-                            <td className="px-4 py-3 text-center">{classReport.late}</td>
-                            <td className="px-4 py-3 text-center">{classReport.absent}</td>
-                            <td className="px-4 py-3 text-center">{classReport.permission}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalPresent || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalLate || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalAbsent || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalPermission || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalAttendanceDays || 0}</td>
                             <td className="px-4 py-3 text-center">
                               <span
                                 className={`text-xs px-2 py-1 rounded-full font-medium ${classReport.averageAttendance >= 90
