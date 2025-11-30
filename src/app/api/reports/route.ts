@@ -98,10 +98,11 @@ export async function GET(request: Request) {
             nis: student.nis,
             name: student.name,
             class: student.class,
-            present: student.status === 'hadir' ? 1 : 0,
-            late: student.late,
-            absent: student.absent,
-            permission: student.permission,
+            present: student.presentCount || 0,
+            late: student.lateCount || 0,
+            absent: student.absentCount || 0,
+            permission: student.permissionCount || 0,
+            totalAttendanceDays: student.totalAttendanceDays || 0,
             attendance: student.attendance,
             currentStatus: student.status,
             promotionStatus: student.promotionStatus || 'belum-ditetapkan',
@@ -127,12 +128,22 @@ export async function GET(request: Request) {
               promoted: 0,
               retained: 0,
               graduated: 0,
-              attendanceSum: 0
+              attendanceSum: 0,
+              totalPresent: 0,
+              totalLate: 0,
+              totalAbsent: 0,
+              totalPermission: 0,
+              totalAttendanceDays: 0
             };
           }
 
           classReports[student.class].totalStudents++;
           classReports[student.class].attendanceSum += student.attendance;
+          classReports[student.class].totalPresent += student.presentCount || 0;
+          classReports[student.class].totalLate += student.lateCount || 0;
+          classReports[student.class].totalAbsent += student.absentCount || 0;
+          classReports[student.class].totalPermission += student.permissionCount || 0;
+          classReports[student.class].totalAttendanceDays += student.totalAttendanceDays || 0;
 
           switch (student.status) {
             case 'hadir':
@@ -198,7 +209,12 @@ export async function GET(request: Request) {
           promotionStatus: student.promotionStatus || 'belum-ditetapkan',
           nextClass: student.nextClass || '-',
           currentTime: student.time,
-          attendancePercentage: student.attendance
+          attendancePercentage: student.attendance,
+          presentCount: student.presentCount || 0,
+          lateCount: student.lateCount || 0,
+          absentCount: student.absentCount || 0,
+          permissionCount: student.permissionCount || 0,
+          totalAttendanceDays: student.totalAttendanceDays || 0
         }));
 
         return NextResponse.json({
@@ -210,7 +226,7 @@ export async function GET(request: Request) {
         });
 
       case 'attendance':
-        // Attendance-focused report
+        // Attendance-focused report with cumulative data
         return NextResponse.json({
           success: true,
           reportType: 'attendance',
@@ -219,10 +235,11 @@ export async function GET(request: Request) {
             nis: student.nis,
             name: student.name,
             class: student.class,
-            present: student.status === 'hadir' ? 1 : 0,
-            late: student.late,
-            absent: student.absent,
-            permission: student.permission,
+            present: student.presentCount || 0,
+            late: student.lateCount || 0,
+            absent: student.absentCount || 0,
+            permission: student.permissionCount || 0,
+            totalAttendanceDays: student.totalAttendanceDays || 0,
             attendance: student.attendance,
             currentStatus: student.status,
             promotionStatus: student.promotionStatus || 'belum-ditetapkan',
