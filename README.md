@@ -95,6 +95,15 @@ NOAH is a modern educational management system built with Next.js 13+ App Router
 3. Build for production: `npm run build`
 4. Start production server: `npm start`
 
+## Vercel Deployment Instructions
+1. Push your code to a GitHub repository
+2. Connect your repository to Vercel
+3. Add the following environment variables in your Vercel project settings:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string
+4. Deploy!
+
+Note: For MongoDB Atlas connections, ensure your IP whitelist includes Vercel's IP ranges or is set to allow access from anywhere (0.0.0.0/0) for testing purposes.
+
 ## Database Migration
 To update existing students' status from 'hadir' to 'belum-diisi' for students who haven't actually had their attendance recorded:
 ```bash
