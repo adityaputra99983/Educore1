@@ -1,34 +1,20 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Camera, Users, Calendar, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle, Download, Upload, Search, Filter, Bell, UserCheck, BarChart3, PieChart, Settings as SettingsIcon, LogOut, Menu, X, UserPlus, ArrowRightLeft, Save, Shield, Heart } from 'lucide-react';
 import { getStudents, updateAttendance, getSettings, getReports, exportReport, addStudent, getTeachers, getTeacherSchedule } from '@/utils/api';
 import { useSettings, type Settings } from '@/contexts/SettingsContext';
 import TeacherScheduleTab from './components/TeacherScheduleTab';
 import type { Student } from '@/types/student';
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+// Dynamically import Chart components to avoid SSR issues
+const Bar = dynamic(() => import('@/components/Charts').then((mod) => mod.Bar), {
+  ssr: false,
+});
+const Pie = dynamic(() => import('@/components/Charts').then((mod) => mod.Pie), {
+  ssr: false,
+});
 
 import type { Teacher, ScheduleItem } from '@/types/teacher';
 
