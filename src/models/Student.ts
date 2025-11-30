@@ -12,6 +12,12 @@ export interface IStudent extends Document {
     late: number;
     absent: number;
     permission: number;
+    // New fields for cumulative attendance tracking
+    presentCount: number;
+    lateCount: number;
+    absentCount: number;
+    permissionCount: number;
+    totalAttendanceDays: number;
     type: 'existing' | 'new' | 'transfer';
     violations: number;
     achievements: number;
@@ -37,6 +43,12 @@ const StudentSchema: Schema = new Schema({
     late: { type: Number, default: 0 },
     absent: { type: Number, default: 0 },
     permission: { type: Number, default: 0 },
+    // New fields for cumulative attendance tracking
+    presentCount: { type: Number, default: 0 },
+    lateCount: { type: Number, default: 0 },
+    absentCount: { type: Number, default: 0 },
+    permissionCount: { type: Number, default: 0 },
+    totalAttendanceDays: { type: Number, default: 0 },
     type: {
         type: String,
         enum: ['existing', 'new', 'transfer'],
