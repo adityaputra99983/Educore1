@@ -3,35 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '@/contexts/SettingsContext';
 import { BarChart3, Download, CheckCircle, Clock, XCircle, Shield, ArrowRightLeft, UserCheck, TrendingUp, PieChart, BarChart, Activity, Trash2 } from 'lucide-react';
-import { getReports, removeStudent } from '@/utils/api';
-// Using text-based export for reports
-import { exportReport } from '@/utils/api';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { getReports, removeStudent, exportReport } from '@/utils/api';
 import dynamic from 'next/dynamic';
+
+// Dynamically import Chart components to avoid SSR issues
+const Bar = dynamic(() => import('@/components/Charts').then((mod) => mod.Bar), {
+  ssr: false,
+});
+const Pie = dynamic(() => import('@/components/Charts').then((mod) => mod.Pie), {
+  ssr: false,
+});
 
 // Dynamically import the new diagram component to avoid SSR issues
 const AttendanceStatusDiagram = dynamic(() => import('./components/AttendanceStatusDiagram'), { ssr: false });
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
 
 const ReportsPage = () => {
   const { settings } = useSettings();
@@ -99,15 +83,15 @@ const ReportsPage = () => {
     if (!window.confirm(`Apakah Anda yakin ingin menghapus data siswa ${studentName}? Tindakan ini tidak dapat dibatalkan.`)) {
       return;
     }
-    
+
     try {
       // Delete student through API
       const response = await removeStudent(studentId);
-      
+
       if (response.success) {
         // Regenerate report after deletion
         await generateReport();
-        
+
         // Show success notification
         showNotification(`Data siswa ${studentName} berhasil dihapus`, 'success');
       } else {
@@ -129,21 +113,21 @@ const ReportsPage = () => {
     const handleAttendanceUpdate = (event: CustomEvent) => {
       // Regenerate report when attendance is updated
       generateReport();
-      
+
       // Show notification about the update
       showNotification('Data kehadiran telah diperbarui', 'success');
     };
-    
+
     const handleRefreshReports = () => {
       generateReport();
     };
-    
+
     window.addEventListener('attendanceUpdated', handleAttendanceUpdate as EventListener);
     window.addEventListener('refreshReports', handleRefreshReports);
-    
+
     // Generate initial report on component mount
     generateReport();
-    
+
     // Clean up
     return () => {
       window.removeEventListener('attendanceUpdated', handleAttendanceUpdate as EventListener);
@@ -244,15 +228,14 @@ const ReportsPage = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDiagram(!showDiagram)}
-                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 ${
-                  showDiagram 
+                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 ${showDiagram
                     ? settings.theme === 'dark'
                       ? 'bg-blue-700 text-white hover:bg-blue-800'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                     : settings.theme === 'dark'
                       ? 'bg-gray-700 text-white hover:bg-gray-600'
                       : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
+                  }`}
               >
                 <Activity className="w-4 h-4" />
                 {showDiagram ? 'Sembunyikan Diagram' : 'Tampilkan Diagram'}
@@ -260,13 +243,12 @@ const ReportsPage = () => {
               <button
                 onClick={generateReport}
                 disabled={loading}
-                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 ${
-                  loading
+                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 ${loading
                     ? 'opacity-50 cursor-not-allowed'
                     : settings.theme === 'dark'
                       ? 'bg-gradient-to-r from-blue-700 to-purple-800 text-white hover:from-blue-800 hover:to-purple-900'
                       : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
-                }`}
+                  }`}
               >
                 {loading ? (
                   <>
@@ -285,9 +267,8 @@ const ReportsPage = () => {
         </div>
 
         {/* Filter Section with Enhanced Design */}
-        <div className={`rounded-2xl p-6 mb-6 shadow-lg transition-all duration-300 ${
-          settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
-        }`}>
+        <div className={`rounded-2xl p-6 mb-6 shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+          }`}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className={`block text-sm font-medium mb-2 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -296,11 +277,10 @@ const ReportsPage = () => {
               <select
                 value={reportType}
                 onChange={handleReportTypeChange}
-                className={`w-full px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  settings.theme === 'dark'
+                className={`w-full px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${settings.theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'border-gray-200 text-gray-900'
-                }`}
+                  }`}
               >
                 <option value="summary">Ringkasan Kehadiran</option>
                 <option value="class">Laporan per Kelas</option>
@@ -316,11 +296,10 @@ const ReportsPage = () => {
               <select
                 value={period}
                 onChange={handlePeriodChange}
-                className={`w-full px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  settings.theme === 'dark'
+                className={`w-full px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${settings.theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'border-gray-200 text-gray-900'
-                }`}
+                  }`}
               >
                 <option value="daily">Harian</option>
                 <option value="weekly">Mingguan</option>
@@ -331,13 +310,12 @@ const ReportsPage = () => {
               <button
                 onClick={generateReport}
                 disabled={loading}
-                className={`px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 flex-1 ${
-                  loading
+                className={`px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 flex-1 ${loading
                     ? 'opacity-50 cursor-not-allowed'
                     : settings.theme === 'dark'
                       ? 'bg-gradient-to-r from-blue-700 to-purple-800 text-white hover:from-blue-800 hover:to-purple-900'
                       : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
-                }`}
+                  }`}
               >
                 {loading ? (
                   <>
@@ -357,28 +335,25 @@ const ReportsPage = () => {
 
         {/* Export Buttons */}
         {reportData && (
-          <div className={`rounded-2xl p-6 mb-6 shadow-lg transition-all duration-300 ${
-            settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
-          }`}>
+          <div className={`rounded-2xl p-6 mb-6 shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+            }`}>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => handleExport('pdf')}
-                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-transform hover:scale-105 ${
-                  settings.theme === 'dark'
+                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-transform hover:scale-105 ${settings.theme === 'dark'
                     ? 'bg-red-700 text-white hover:bg-red-800'
                     : 'bg-red-600 text-white hover:bg-red-700'
-                }`}
+                  }`}
               >
                 <Download className="w-4 h-4" />
                 Ekspor PDF
               </button>
               <button
                 onClick={() => handleExport('excel')}
-                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-transform hover:scale-105 ${
-                  settings.theme === 'dark'
+                className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-transform hover:scale-105 ${settings.theme === 'dark'
                     ? 'bg-green-700 text-white hover:bg-green-800'
                     : 'bg-green-600 text-white hover:bg-green-700'
-                }`}
+                  }`}
               >
                 <Download className="w-4 h-4" />
                 Ekspor Excel
@@ -389,9 +364,8 @@ const ReportsPage = () => {
 
         {/* Report Content */}
         {loading ? (
-          <div className={`rounded-2xl p-12 shadow-lg transition-all duration-300 ${
-            settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
-          } text-center`}>
+          <div className={`rounded-2xl p-12 shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+            } text-center`}>
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <h3 className={`text-xl font-bold mb-2 ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
               Memproses Laporan...
@@ -405,9 +379,8 @@ const ReportsPage = () => {
             {/* Summary Cards with Enhanced Design */}
             {reportData.attendanceStats && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -417,18 +390,17 @@ const ReportsPage = () => {
                         {reportData.attendanceStats.present}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-600'
+                      }`}>
                       <CheckCircle className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-emerald-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.present / reportData.attendanceStats.totalStudents) * 100 : 0}%` 
+                      <div
+                        className="bg-emerald-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.present / reportData.attendanceStats.totalStudents) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -438,9 +410,8 @@ const ReportsPage = () => {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -450,18 +421,17 @@ const ReportsPage = () => {
                         {reportData.attendanceStats.late}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-100 text-amber-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-100 text-amber-600'
+                      }`}>
                       <Clock className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-amber-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.late / reportData.attendanceStats.totalStudents) * 100 : 0}%` 
+                      <div
+                        className="bg-amber-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.late / reportData.attendanceStats.totalStudents) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -471,9 +441,8 @@ const ReportsPage = () => {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -483,18 +452,17 @@ const ReportsPage = () => {
                         {reportData.attendanceStats.absent}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
+                      }`}>
                       <XCircle className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-red-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.absent / reportData.attendanceStats.totalStudents) * 100 : 0}%` 
+                      <div
+                        className="bg-red-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.absent / reportData.attendanceStats.totalStudents) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -504,9 +472,8 @@ const ReportsPage = () => {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -516,18 +483,17 @@ const ReportsPage = () => {
                         {reportData.attendanceStats.permission}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'
+                      }`}>
                       <Shield className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.permission / reportData.attendanceStats.totalStudents) * 100 : 0}%` 
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.attendanceStats.totalStudents ? (reportData.attendanceStats.permission / reportData.attendanceStats.totalStudents) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -541,9 +507,8 @@ const ReportsPage = () => {
 
             {/* Enhanced Diagram Section - Always visible for summary and performance reports */}
             {(reportData.reportType === 'summary' || reportData.reportType === 'performance') && reportData.attendanceStats && (
-              <div className={`rounded-2xl p-6 shadow-lg transition-all duration-300 ${
-                settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
-              }`}>
+              <div className={`rounded-2xl p-6 shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
+                }`}>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className={`text-xl font-bold ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
                     <Activity className="inline mr-2 w-6 h-6 text-blue-500" />
@@ -554,8 +519,8 @@ const ReportsPage = () => {
                     <span className="text-sm font-medium">Visualisasi Data</span>
                   </div>
                 </div>
-                
-                <AttendanceStatusDiagram 
+
+                <AttendanceStatusDiagram
                   attendanceStats={{
                     present: reportData.attendanceStats.present || 0,
                     late: reportData.attendanceStats.late || 0,
@@ -643,13 +608,11 @@ const ReportsPage = () => {
 
             {/* Detailed Data Tables */}
             {reportData.students && (
-              <div className={`rounded-2xl shadow-lg transition-all duration-300 ${
-                settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
-              }`}>
+              <div className={`rounded-2xl shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
+                }`}>
                 <div className="p-6">
-                  <h3 className={`text-lg font-bold mb-4 flex items-center ${
-                    settings.theme === 'dark' ? 'text-white' : 'text-gray-800'
-                  }`}>
+                  <h3 className={`text-lg font-bold mb-4 flex items-center ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'
+                    }`}>
                     <BarChart className="mr-2 w-5 h-5 text-blue-500" />
                     Data Siswa
                   </h3>
@@ -679,6 +642,9 @@ const ReportsPage = () => {
                             Izin/Sakit
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Total Hari
+                          </th>
+                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                             Tingkat Kehadiran
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -705,26 +671,25 @@ const ReportsPage = () => {
                               {student.class}
                             </td>
                             <td className="px-4 py-3 text-center">{student.present || 0}</td>
-                            <td className="px-4 py-3 text-center">{student.late}</td>
-                            <td className="px-4 py-3 text-center">{student.absent}</td>
-                            <td className="px-4 py-3 text-center">{student.permission}</td>
+                            <td className="px-4 py-3 text-center">{student.late || 0}</td>
+                            <td className="px-4 py-3 text-center">{student.absent || 0}</td>
+                            <td className="px-4 py-3 text-center">{student.permission || 0}</td>
+                            <td className="px-4 py-3 text-center">{student.totalAttendanceDays || 0}</td>
                             <td className="px-4 py-3 text-center">
                               <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  student.attendance >= 90
+                                className={`text-xs px-2 py-1 rounded-full font-medium ${student.attendance >= 90
                                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                                     : student.attendance >= 75
                                       ? 'bg-amber-100 text-amber-700 border border-amber-200'
                                       : 'bg-red-100 text-red-700 border border-red-200'
-                                }`}
+                                  }`}
                               >
                                 {student.attendance}%
                               </span>
                             </td>
                             <td className="px-4 py-3 text-center">
                               <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  student.promotionStatus === 'naik'
+                                className={`text-xs px-2 py-1 rounded-full font-medium ${student.promotionStatus === 'naik'
                                     ? settings.theme === 'dark'
                                       ? 'bg-green-900/30 text-green-400 border border-green-800'
                                       : 'bg-green-100 text-green-700'
@@ -739,7 +704,7 @@ const ReportsPage = () => {
                                         : settings.theme === 'dark'
                                           ? 'bg-gray-700 text-gray-300 border border-gray-600'
                                           : 'bg-gray-200 text-gray-700'
-                                }`}
+                                  }`}
                               >
                                 {student.promotionStatus === 'naik'
                                   ? 'Naik'
@@ -753,11 +718,10 @@ const ReportsPage = () => {
                             <td className="px-4 py-3 text-center">
                               <button
                                 onClick={() => handleDeleteStudent(student.id, student.name)}
-                                className={`p-2 rounded-full ${
-                                  settings.theme === 'dark' 
-                                    ? 'text-red-400 hover:bg-red-900/50' 
+                                className={`p-2 rounded-full ${settings.theme === 'dark'
+                                    ? 'text-red-400 hover:bg-red-900/50'
                                     : 'text-red-600 hover:bg-red-100'
-                                }`}
+                                  }`}
                                 title={`Hapus ${student.name}`}
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -774,13 +738,11 @@ const ReportsPage = () => {
 
             {/* Class Reports */}
             {reportData.classReports && (
-              <div className={`rounded-2xl shadow-lg transition-all duration-300 ${
-                settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
-              }`}>
+              <div className={`rounded-2xl shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
+                }`}>
                 <div className="p-6">
-                  <h3 className={`text-lg font-bold mb-4 flex items-center ${
-                    settings.theme === 'dark' ? 'text-white' : 'text-gray-800'
-                  }`}>
+                  <h3 className={`text-lg font-bold mb-4 flex items-center ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'
+                    }`}>
                     <PieChart className="mr-2 w-5 h-5 text-blue-500" />
                     Laporan per Kelas
                   </h3>
@@ -807,6 +769,9 @@ const ReportsPage = () => {
                             Izin/Sakit
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Total Hari
+                          </th>
+                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                             Tingkat Kehadiran
                           </th>
                           <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -830,19 +795,19 @@ const ReportsPage = () => {
                               {classReport.class}
                             </td>
                             <td className="px-4 py-3 text-center">{classReport.totalStudents}</td>
-                            <td className="px-4 py-3 text-center">{classReport.present}</td>
-                            <td className="px-4 py-3 text-center">{classReport.late}</td>
-                            <td className="px-4 py-3 text-center">{classReport.absent}</td>
-                            <td className="px-4 py-3 text-center">{classReport.permission}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalPresent || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalLate || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalAbsent || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalPermission || 0}</td>
+                            <td className="px-4 py-3 text-center">{classReport.totalAttendanceDays || 0}</td>
                             <td className="px-4 py-3 text-center">
                               <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  classReport.averageAttendance >= 90
+                                className={`text-xs px-2 py-1 rounded-full font-medium ${classReport.averageAttendance >= 90
                                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                                     : classReport.averageAttendance >= 75
                                       ? 'bg-amber-100 text-amber-700 border border-amber-200'
                                       : 'bg-red-100 text-red-700 border border-red-200'
-                                }`}
+                                  }`}
                               >
                                 {classReport.averageAttendance}%
                               </span>
@@ -862,9 +827,8 @@ const ReportsPage = () => {
             {/* Promotion Reports */}
             {reportData.promotionStats && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -874,18 +838,17 @@ const ReportsPage = () => {
                         {reportData.promotionStats.promoted}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600'
+                      }`}>
                       <ArrowRightLeft className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.promoted / reportData.promotionStats.total) * 100 : 0}%` 
+                      <div
+                        className="bg-green-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.promoted / reportData.promotionStats.total) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -895,9 +858,8 @@ const ReportsPage = () => {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -907,18 +869,17 @@ const ReportsPage = () => {
                         {reportData.promotionStats.retained}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
+                      }`}>
                       <XCircle className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-red-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.retained / reportData.promotionStats.total) * 100 : 0}%` 
+                      <div
+                        className="bg-red-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.retained / reportData.promotionStats.total) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -928,9 +889,8 @@ const ReportsPage = () => {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -940,18 +900,17 @@ const ReportsPage = () => {
                         {reportData.promotionStats.graduated}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'
+                      }`}>
                       <CheckCircle className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.graduated / reportData.promotionStats.total) * 100 : 0}%` 
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.graduated / reportData.promotionStats.total) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -961,9 +920,8 @@ const ReportsPage = () => {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
-                }`}>
+                <div className={`rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 ${settings.theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>
@@ -973,18 +931,17 @@ const ReportsPage = () => {
                         {reportData.promotionStats.undecided}
                       </h3>
                     </div>
-                    <div className={`p-3 rounded-full ${
-                      settings.theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
-                    }`}>
+                    <div className={`p-3 rounded-full ${settings.theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-600'
+                      }`}>
                       <UserCheck className="w-8 h-8" />
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-gray-500 h-2 rounded-full" 
-                        style={{ 
-                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.undecided / reportData.promotionStats.total) * 100 : 0}%` 
+                      <div
+                        className="bg-gray-500 h-2 rounded-full"
+                        style={{
+                          width: `${reportData.promotionStats.total ? (reportData.promotionStats.undecided / reportData.promotionStats.total) * 100 : 0}%`
                         }}
                       ></div>
                     </div>
@@ -995,203 +952,17 @@ const ReportsPage = () => {
                 </div>
               </div>
             )}
-
-            {/* Detailed Student Stats */}
-            {reportData.detailedStats && (
-              <div className={`rounded-2xl shadow-lg transition-all duration-300 ${
-                settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'
-              }`}>
-                <div className="p-6">
-                  <h3 className={`text-lg font-bold mb-4 flex items-center ${
-                    settings.theme === 'dark' ? 'text-white' : 'text-gray-800'
-                  }`}>
-                    <TrendingUp className="mr-2 w-5 h-5 text-blue-500" />
-                    Detail Statistik Siswa
-                  </h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className={`${settings.theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                          <th className={`px-4 py-3 text-left text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            NIS
-                          </th>
-                          <th className={`px-4 py-3 text-left text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Nama
-                          </th>
-                          <th className={`px-4 py-3 text-left text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Kelas
-                          </th>
-                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Status Saat Ini
-                          </th>
-                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Status Kenaikan
-                          </th>
-                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Kelas Tujuan
-                          </th>
-                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Waktu
-                          </th>
-                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Tingkat Kehadiran
-                          </th>
-                          <th className={`px-4 py-3 text-center text-sm font-semibold ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Aksi
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className={`${settings.theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                        {reportData.detailedStats.map((student: any) => (
-                          <tr
-                            key={student.id}
-                            className={`hover:${settings.theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'} transition-colors`}
-                          >
-                            <td className={`px-4 py-3 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                              {student.nis}
-                            </td>
-                            <td className={`px-4 py-3 font-medium ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
-                              {student.name}
-                            </td>
-                            <td className={`px-4 py-3 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                              {student.class}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  student.currentStatus === 'hadir'
-                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                    : student.currentStatus === 'terlambat'
-                                      ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                                      : student.currentStatus === 'tidak-hadir'
-                                        ? 'bg-red-100 text-red-700 border border-red-200'
-                                        : student.currentStatus === 'izin'
-                                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                                          : student.currentStatus === 'sakit'
-                                            ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                                            : 'bg-gray-100 text-gray-700 border border-gray-200'
-                                }`}
-                              >
-                                {student.currentStatus === 'hadir'
-                                  ? 'Hadir'
-                                  : student.currentStatus === 'terlambat'
-                                    ? 'Terlambat'
-                                    : student.currentStatus === 'tidak-hadir'
-                                      ? 'Tidak Hadir'
-                                      : student.currentStatus === 'izin'
-                                        ? 'Izin'
-                                        : student.currentStatus === 'sakit'
-                                          ? 'Sakit'
-                                          : 'Belum Hadir'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  student.promotionStatus === 'naik'
-                                    ? settings.theme === 'dark'
-                                      ? 'bg-green-900/30 text-green-400 border border-green-800'
-                                      : 'bg-green-100 text-green-700'
-                                    : student.promotionStatus === 'tinggal'
-                                      ? settings.theme === 'dark'
-                                        ? 'bg-red-900/30 text-red-400 border border-red-800'
-                                        : 'bg-red-100 text-red-700'
-                                      : student.promotionStatus === 'lulus'
-                                        ? settings.theme === 'dark'
-                                          ? 'bg-blue-900/30 text-blue-400 border border-blue-800'
-                                          : 'bg-blue-100 text-blue-700'
-                                        : settings.theme === 'dark'
-                                          ? 'bg-gray-700 text-gray-300 border border-gray-600'
-                                          : 'bg-gray-200 text-gray-700'
-                                }`}
-                              >
-                                {student.promotionStatus === 'naik'
-                                  ? 'Naik'
-                                  : student.promotionStatus === 'tinggal'
-                                    ? 'Tinggal'
-                                    : student.promotionStatus === 'lulus'
-                                      ? 'Lulus'
-                                      : 'Belum Ditentukan'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center">{student.nextClass || '-'}</td>
-                            <td className="px-4 py-3 text-center">{student.currentTime || '-'}</td>
-                            <td className="px-4 py-3 text-center">
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  student.attendancePercentage >= 90
-                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                    : student.attendancePercentage >= 75
-                                      ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                                      : 'bg-red-100 text-red-700 border border-red-200'
-                                }`}
-                              >
-                                {student.attendancePercentage}%
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <button
-                                onClick={() => handleDeleteStudent(student.id, student.name)}
-                                className={`p-2 rounded-full ${
-                                  settings.theme === 'dark' 
-                                    ? 'text-red-400 hover:bg-red-900/50' 
-                                    : 'text-red-600 hover:bg-red-100'
-                                }`}
-                                title={`Hapus ${student.name}`}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
-          <div className={`rounded-2xl p-12 shadow-lg transition-all duration-300 ${
-            settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
-          } text-center`}>
-            <BarChart3 className={`w-16 h-16 mx-auto ${settings.theme === 'dark' ? 'text-gray-500' : 'text-gray-300'} mb-4`} />
+          <div className={`rounded-2xl p-12 shadow-lg transition-all duration-300 ${settings.theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+            } text-center`}>
+            <BarChart3 className={`w-16 h-16 mx-auto mb-4 ${settings.theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`} />
             <h3 className={`text-xl font-bold mb-2 ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
               Belum Ada Laporan
             </h3>
-            <p className={`mb-6 ${settings.theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-              Pilih jenis laporan dan klik "Hasilkan Laporan" untuk melihat data kehadiran siswa
+            <p className={`${settings.theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
+              Silakan pilih jenis laporan dan periode, lalu klik tombol "Hasilkan Laporan"
             </p>
-            <button
-              onClick={generateReport}
-              className={`px-6 py-3 rounded-xl font-medium transition-transform hover:scale-105 ${
-                settings.theme === 'dark'
-                  ? 'bg-gradient-to-r from-blue-700 to-purple-800 text-white hover:from-blue-800 hover:to-purple-900'
-                  : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
-              }`}
-            >
-              Hasilkan Laporan Sekarang
-            </button>
-          </div>
-        )}
-
-        {/* Notification */}
-        {notification.show && (
-          <div className="fixed bottom-6 right-6 z-50">
-            <div
-              className={`px-6 py-4 rounded-xl shadow-lg flex items-center gap-3 transition-all duration-300 animate-fade-in-up ${
-                notification.type === 'success'
-                  ? settings.theme === 'dark'
-                    ? 'bg-emerald-900 text-emerald-200'
-                    : 'bg-emerald-100 text-emerald-700'
-                  : settings.theme === 'dark'
-                    ? 'bg-red-900 text-red-200'
-                    : 'bg-red-100 text-red-700'
-              }`}
-            >
-              <CheckCircle className="w-5 h-5" />
-              <span className="font-medium">{notification.message}</span>
-            </div>
           </div>
         )}
       </div>

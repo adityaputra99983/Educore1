@@ -185,9 +185,39 @@ export async function PUT(request: Request) {
         break;
     }
 
-    const totalDays = 100; // Fixed total as per original code
-    const presentDays = totalDays - updatedAbsent - updatedPermission;
-    const updatedAttendance = Math.max(0, Math.min(100, Math.round((presentDays / totalDays) * 100)));
+    // Update cumulative attendance counts
+    let updatedPresentCount = student.presentCount || 0;
+    let updatedLateCount = student.lateCount || 0;
+    let updatedAbsentCount = student.absentCount || 0;
+    let updatedPermissionCount = student.permissionCount || 0;
+    let updatedTotalAttendanceDays = student.totalAttendanceDays || 0;
+
+    // Increase the count for the new status
+    switch (newStatus) {
+      case 'hadir':
+        updatedPresentCount = updatedPresentCount + 1;
+        break;
+      case 'terlambat':
+        updatedLateCount = updatedLateCount + 1;
+        break;
+      case 'tidak-hadir':
+        updatedAbsentCount = updatedAbsentCount + 1;
+        break;
+      case 'izin':
+      case 'sakit':
+        updatedPermissionCount = updatedPermissionCount + 1;
+        break;
+    }
+
+    // Increment total attendance days
+    updatedTotalAttendanceDays = updatedTotalAttendanceDays + 1;
+
+    // Calculate updated attendance percentage based on cumulative counts
+    const totalRecordedDays = updatedPresentCount + updatedLateCount + updatedAbsentCount + updatedPermissionCount;
+    const presentDays = updatedPresentCount + updatedLateCount; // Present includes on-time and late
+    const updatedAttendance = totalRecordedDays > 0 
+      ? Math.max(0, Math.min(100, Math.round((presentDays / totalRecordedDays) * 100)))
+      : 0;
 
     const updatedStudent = await Student.findOneAndUpdate(
       { id: id },
@@ -197,7 +227,13 @@ export async function PUT(request: Request) {
         attendance: updatedAttendance,
         late: updatedLate,
         absent: updatedAbsent,
-        permission: updatedPermission
+        permission: updatedPermission,
+        // Update cumulative attendance fields
+        presentCount: updatedPresentCount,
+        lateCount: updatedLateCount,
+        absentCount: updatedAbsentCount,
+        permissionCount: updatedPermissionCount,
+        totalAttendanceDays: updatedTotalAttendanceDays
       },
       { new: true }
     );

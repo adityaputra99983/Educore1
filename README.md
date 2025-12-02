@@ -16,6 +16,7 @@ NOAH is a modern educational management system built with Next.js 13+ App Router
 - Added new 'belum-diisi' status for students whose attendance hasn't been recorded yet
 - Fixed issue where all students appeared as "present" when no attendance was recorded
 - Improved dashboard statistics to accurately reflect attendance status
+- Implemented cumulative attendance tracking (counting how many times a student has been present, late, absent, etc.)
 
 ### 2. Enhanced Type Safety
 - Added strict TypeScript interfaces for all data models
@@ -52,6 +53,7 @@ NOAH is a modern educational management system built with Next.js 13+ App Router
 - Enhanced export functionality with better formatting (PDF and Excel)
 - Added comprehensive test pages to verify functionality
 - Implemented real-time data updates through API connectivity
+- Added cumulative attendance data to reports (showing total counts of present, late, absent, etc.)
 
 ## API Endpoints
 
@@ -95,10 +97,24 @@ NOAH is a modern educational management system built with Next.js 13+ App Router
 3. Build for production: `npm run build`
 4. Start production server: `npm start`
 
+## Vercel Deployment Instructions
+1. Push your code to a GitHub repository
+2. Connect your repository to Vercel
+3. Add the following environment variables in your Vercel project settings:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string
+4. Deploy!
+
+Note: For MongoDB Atlas connections, ensure your IP whitelist includes Vercel's IP ranges or is set to allow access from anywhere (0.0.0.0/0) for testing purposes.
+
 ## Database Migration
 To update existing students' status from 'hadir' to 'belum-diisi' for students who haven't actually had their attendance recorded:
 ```bash
 npm run update-students
+```
+
+To initialize cumulative attendance counts for existing students:
+```bash
+node scripts/initialize-attendance-counts.js
 ```
 
 ## Contributing
