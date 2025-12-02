@@ -2397,6 +2397,7 @@ const ModernAttendanceSystem = () => {
         {/* Header */}
         <header className={`${settings.theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 md:px-6 py-4`}>
           <div className="flex items-center justify-between">
+            {/* Left Section: Mobile Menu + Page Title */}
             <div className="flex items-center gap-3">
               {/* Mobile Menu Button */}
               <button
@@ -2406,6 +2407,7 @@ const ModernAttendanceSystem = () => {
                 <Menu className="w-6 h-6" />
               </button>
 
+              {/* Page Title & Academic Info */}
               <div>
                 <h2 className={`text-xl md:text-2xl font-bold ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
                   {activeTab === 'dashboard' && 'Dashboard'}
@@ -2420,17 +2422,23 @@ const ModernAttendanceSystem = () => {
                   {settings.academic_year || 'Tahun Ajaran 2024/2025'} - {settings.semester || 'Semester Ganjil'}
                 </p>
               </div>
+            </div>
 
-              <div className="flex items-center gap-4">
-                <button className={`p-2 rounded-full ${settings.theme === 'dark' ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
-                  <Bell className="w-5 h-5" />
-                </button>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
-                  <div className={`${isSidebarOpen ? 'block' : 'hidden'}`}>
-                    <p className={`font-medium ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Admin</p>
-                    <p className={`text-sm ${settings.theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Administrator</p>
-                  </div>
+            {/* Right Section: Notification + Admin Profile */}
+            <div className="flex items-center gap-3 md:gap-4">
+              {/* Notification Button */}
+              <button className={`p-2 rounded-full ${settings.theme === 'dark' ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+                <Bell className="w-5 h-5" />
+              </button>
+
+              {/* Admin Profile */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">A</span>
+                </div>
+                <div className="hidden md:block">
+                  <p className={`font-medium text-sm ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Admin</p>
+                  <p className={`text-xs ${settings.theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Administrator</p>
                 </div>
               </div>
             </div>
