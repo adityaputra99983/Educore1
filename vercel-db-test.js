@@ -1,5 +1,6 @@
 // Test script specifically for Vercel deployment
-require('dotenv').config({ path: '.env.local' });
+// Note: dotenv config is not needed in Vercel runtime environment
+// Environment variables are automatically available
 
 console.log('=== Vercel Database Connection Test ===');
 console.log('Current working directory:', process.cwd());
