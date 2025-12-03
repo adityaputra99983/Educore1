@@ -92,8 +92,3 @@ async function testEnhancedConnection() {
 
 // Run the test
 
-<<<<<<< HEAD
-testEnhancedConnection().catch(console.error);
-=======
-testEnhancedConnection().catch(console.error);
->>>>>>> 13a769e (firts commit)

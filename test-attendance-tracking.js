@@ -183,10 +183,3 @@ async function testAttendanceTracking() {
 if (require.main === module) {
   testAttendanceTracking().catch(console.error);
 }
-
-
-<<<<<<< HEAD
-module.exports = { testAttendanceTracking };
-=======
-module.exports = { testAttendanceTracking };
->>>>>>> 13a769e (firts commit)
