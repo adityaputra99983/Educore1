@@ -1,5 +1,6 @@
 "use client";
 
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar as ChartBar, Pie as ChartPie } from "react-chartjs-2";
 
-export { Bar, Pie };
+export const Bar = ChartBar;
+export const Pie = ChartPie;
