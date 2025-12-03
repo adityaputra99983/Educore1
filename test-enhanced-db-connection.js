@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 /**
  * Test script for enhanced MongoDB connection handling
  * This script verifies the improved error handling, logging, and connection management
@@ -48,7 +48,7 @@ async function testEnhancedConnection() {
 }
 
 // Run the test
-=======
+
 /**
  * Test script for enhanced MongoDB connection handling
  * This script verifies the improved error handling, logging, and connection management
@@ -91,5 +91,5 @@ async function testEnhancedConnection() {
 }
 
 // Run the test
->>>>>>> 6e4a954937fec25b661d78aabe9237d139f19a73
+
 testEnhancedConnection().catch(console.error);

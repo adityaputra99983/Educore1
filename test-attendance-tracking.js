@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 /**
  * Test script to verify attendance tracking functionality
  */
@@ -91,7 +91,7 @@ if (require.main === module) {
   testAttendanceTracking().catch(console.error);
 }
 
-=======
+
 /**
  * Test script to verify attendance tracking functionality
  */
@@ -184,5 +184,5 @@ if (require.main === module) {
   testAttendanceTracking().catch(console.error);
 }
 
->>>>>>> 6e4a954937fec25b661d78aabe9237d139f19a73
+
 module.exports = { testAttendanceTracking };
