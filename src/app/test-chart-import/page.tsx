@@ -60,8 +60,4 @@ export default function TestChartImport() {
       <Pie data={pieData} />
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> e0b83b3 (force deploy via preview)

@@ -185,4 +185,8 @@ if (require.main === module) {
 }
 
 
+<<<<<<< HEAD
 module.exports = { testAttendanceTracking };
+=======
+module.exports = { testAttendanceTracking };
+>>>>>>> 13a769e (firts commit)

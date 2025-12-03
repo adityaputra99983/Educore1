@@ -87,4 +87,4 @@ if (require.main === module) {
   testAttendanceTracking().catch(console.error);
 }
 
-module.exports = { testAttendanceTracking };
+

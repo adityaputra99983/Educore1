@@ -99,4 +99,3 @@ if (require.main === module) {
   initializeAttendanceCounts().catch(console.error);
 }
 
-module.exports = { initializeAttendanceCounts };
