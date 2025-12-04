@@ -3,10 +3,11 @@ import dbConnect from '../../../../lib/db';
 import Student from '../../../../models/Student';
 
 // GET /api/students/[id] - Get a specific student by ID with detailed information
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     await dbConnect();
-    const { id } = await params;
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const { id } = resolvedParams;
     const studentId = parseInt(id, 10);
 
     if (isNaN(studentId)) {
@@ -89,10 +90,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // DELETE /api/students/[id] - Remove a student
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     await dbConnect();
-    const { id } = await params;
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const { id } = resolvedParams;
     const studentId = parseInt(id, 10);
 
     if (isNaN(studentId)) {
