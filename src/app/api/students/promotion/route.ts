@@ -43,7 +43,7 @@ export async function PUT(request: Request) {
       }, { status: 400 });
     }
 
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       promotionStatus,
       // We need to fetch the student first to know the current class for previousClass, 
       // or we can just use aggregation pipeline update if we want to be atomic, 

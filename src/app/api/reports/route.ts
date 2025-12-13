@@ -73,12 +73,12 @@ export async function GET(request: Request) {
       case 'performance':
         // Calculate performance statistics
         const performanceData = {
-          perfectAttendance: students.filter((s: any) => s.attendance === 100).length,
-          highAttendance: students.filter((s: any) => s.attendance >= 90 && s.attendance < 100).length,
-          mediumAttendance: students.filter((s: any) => s.attendance >= 75 && s.attendance < 90).length,
-          lowAttendance: students.filter((s: any) => s.attendance < 75).length,
-          mostLate: [...students].sort((a: any, b: any) => b.late - a.late).slice(0, 5),
-          mostAbsent: [...students].sort((a: any, b: any) => b.absent - a.absent).slice(0, 5)
+          perfectAttendance: students.filter((s: IStudent) => s.attendance === 100).length,
+          highAttendance: students.filter((s: IStudent) => s.attendance >= 90 && s.attendance < 100).length,
+          mediumAttendance: students.filter((s: IStudent) => s.attendance >= 75 && s.attendance < 90).length,
+          lowAttendance: students.filter((s: IStudent) => s.attendance < 75).length,
+          mostLate: [...students].sort((a: IStudent, b: IStudent) => b.late - a.late).slice(0, 5),
+          mostAbsent: [...students].sort((a: IStudent, b: IStudent) => b.absent - a.absent).slice(0, 5)
         };
 
         return NextResponse.json({
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: true,
           reportType: 'detailed',
-          students: students.map((student: any) => ({
+          students: students.map((student: IStudent) => ({
             id: student.id,
             nis: student.nis,
             name: student.name,
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
       case 'class':
         // Enhanced class report with detailed statistics
         const classReports: Record<string, any> = {};
-        students.forEach((student: any) => {
+        students.forEach((student: IStudent) => {
           if (!classReports[student.class]) {
             classReports[student.class] = {
               class: student.class,
@@ -177,9 +177,9 @@ export async function GET(request: Request) {
 
         // Calculate average attendance rates for each class
         Object.values(classReports).forEach((classData: any) => {
-          const total = classData.totalStudents;
+          const total = (classData as { totalStudents: number }).totalStudents;
           classData.averageAttendance = total > 0
-            ? Math.round((classData.attendanceSum / total) * 10) / 10
+            ? Math.round(((classData as { attendanceSum: number }).attendanceSum / total) * 10) / 10
             : 0;
         });
 
@@ -193,14 +193,14 @@ export async function GET(request: Request) {
       case 'promotion':
         // Enhanced promotion report with detailed statistics
         const promotionStats = {
-          promoted: students.filter((s: any) => s.promotionStatus === 'naik').length,
-          retained: students.filter((s: any) => s.promotionStatus === 'tinggal').length,
-          graduated: students.filter((s: any) => s.promotionStatus === 'lulus').length,
-          undecided: students.filter((s: any) => !s.promotionStatus || s.promotionStatus === 'belum-ditetapkan').length
+          promoted: students.filter((s: IStudent) => s.promotionStatus === 'naik').length,
+          retained: students.filter((s: IStudent) => s.promotionStatus === 'tinggal').length,
+          graduated: students.filter((s: IStudent) => s.promotionStatus === 'lulus').length,
+          undecided: students.filter((s: IStudent) => !s.promotionStatus || s.promotionStatus === 'belum-ditetapkan').length
         };
 
         // Detailed student stats for promotion
-        const detailedStats = students.map((student: any) => ({
+        const detailedStats = students.map((student: IStudent) => ({
           id: student.id,
           nis: student.nis,
           name: student.name,
@@ -230,7 +230,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: true,
           reportType: 'attendance',
-          students: students.map((student: any) => ({
+          students: students.map((student: IStudent) => ({
             id: student.id,
             nis: student.nis,
             name: student.name,

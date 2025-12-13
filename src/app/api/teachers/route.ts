@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
-import Teacher, { type ITeacher } from '../../../models/Teacher';
+import Teacher from '../../../models/Teacher';
 
 /**
  * GET /api/teachers

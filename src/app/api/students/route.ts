@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const promotionStatusFilter = searchParams.get('promotionStatus');
 
     // Build query
-    const query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (classFilter && classFilter !== 'all') {
       query.class = classFilter;
