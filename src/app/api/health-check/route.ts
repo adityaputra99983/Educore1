@@ -33,7 +33,7 @@ export async function GET() {
         stats = {
           ok: true
         };
-      } catch (statsError) {
+      } catch (statsError: unknown) {
         stats = {
           ok: false,
           error: statsError instanceof Error ? statsError.message : 'Unknown error'
@@ -56,13 +56,20 @@ export async function GET() {
   } catch (error: unknown) {
     console.error('[Health Check] Database connection failed:', error);
     
+    // Create a more specific error object
+    let errorCode = 'UNKNOWN';
+    if (error instanceof Error) {
+      // Try to extract code if it exists
+      errorCode = (error as any).code || errorCode;
+    }
+    
     return NextResponse.json({
       success: false,
       message: 'Database connection failed',
       error: {
         message: error instanceof Error ? error.message : 'Unknown error',
         name: error instanceof Error ? error.name : 'Error',
-        code: (error as any)?.code || 'UNKNOWN',
+        code: errorCode,
         ...(error instanceof Error && { stack: error.stack })
       },
       timestamp: new Date().toISOString(),
