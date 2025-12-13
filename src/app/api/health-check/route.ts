@@ -57,20 +57,30 @@ export async function GET() {
     console.error('[Health Check] Database connection failed:', error);
     
     // Create a more specific error object
+    let errorMessage = 'Unknown error';
+    let errorName = 'Error';
     let errorCode = 'UNKNOWN';
+    let errorStack: string | undefined;
+    
     if (error instanceof Error) {
+      errorMessage = error.message;
+      errorName = error.name;
+      errorStack = error.stack;
+      
       // Try to extract code if it exists
-      errorCode = (error as any).code || errorCode;
+      if ('code' in error && typeof (error as any).code === 'string') {
+        errorCode = (error as any).code;
+      }
     }
     
     return NextResponse.json({
       success: false,
       message: 'Database connection failed',
       error: {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        name: error instanceof Error ? error.name : 'Error',
+        message: errorMessage,
+        name: errorName,
         code: errorCode,
-        ...(error instanceof Error && { stack: error.stack })
+        ...(errorStack && { stack: errorStack })
       },
       timestamp: new Date().toISOString(),
     }, { 

@@ -66,8 +66,8 @@ export async function GET(request: Request) {
       }, { status: 400 });
     }
 
-    // Build query
-    let query: Record<string, unknown> = {};
+    // Build the query object for filtering students
+    const query: Record<string, unknown> = {};
 
     if (classFilter && classFilter !== 'all') {
       query.class = classFilter;
