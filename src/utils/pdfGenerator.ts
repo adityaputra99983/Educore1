@@ -22,6 +22,29 @@ function safeText(value: any): string {
   return String(value);
 }
 
+// Format currency values
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
+// Format percentage values
+function formatPercentage(value: number): string {
+  return value.toFixed(2) + '%';
+}
+
+// Format date values
+function formatDate(date: Date | string): string {
+  if (typeof date === 'string') {
+    return new Date(date).toLocaleDateString('id-ID');
+  }
+  return date.toLocaleDateString('id-ID');
+}
+
 /**
  * Generate a PDF report using pdfmake with modern styling
  * @param reportData The report data to include in the PDF
@@ -41,7 +64,7 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
     const docDefinition: any = {
       pageSize: 'A4',
       pageOrientation: 'portrait',
-      pageMargins: [40, 80, 40, 60],
+      pageMargins: [40, 60, 40, 40],
       content: [],
       styles: {
         header: {
@@ -53,7 +76,7 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
           fontSize: 14,
           bold: true,
           margin: [0, 15, 0, 10],
-          color: '#1e40af'
+          color: '#2563eb'
         },
         tableHeader: {
           bold: true,
@@ -120,6 +143,18 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
           fontSize: 8,
           color: '#64748b',
           margin: [0, 0, 0, 2]
+        },
+        sectionHeader: {
+          fontSize: 12,
+          bold: true,
+          color: '#2563eb',
+          margin: [0, 15, 0, 8]
+        },
+        note: {
+          fontSize: 8,
+          color: '#64748b',
+          margin: [0, 5, 0, 0],
+          italics: true
         }
       },
       defaultStyle: {
@@ -128,25 +163,21 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
       }
     };
     
-    // Add school header with logo placeholder
+    // Add school header with more professional styling to match test reports
     docDefinition.content.push({
       columns: [
         {
-          // Logo placeholder - in a real implementation, you would add an image
           width: 60,
-          text: '[LOGO]',
-          alignment: 'center',
-          bold: true,
-          fontSize: 14,
-          color: '#2563eb'
+          text: '', // Placeholder for logo
+          alignment: 'center'
         },
         [
           {
-            text: 'NAMA SEKOLAH',
+            text: 'LAPORAN KEHADIRAN DAN KENAIKAN KELAS',
             style: 'schoolName'
           },
           {
-            text: 'Alamat Sekolah - Kota, Provinsi',
+            text: 'SMA NEGERI 1 JAKARTA',
             style: 'schoolAddress'
           },
           {
@@ -156,7 +187,7 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
                 x1: 0, y1: 0,
                 x2: 515, y2: 0,
                 lineWidth: 2,
-                lineColor: '#2563eb'
+                lineColor: '#1e40af'
               }
             ],
             style: 'divider'
@@ -180,11 +211,40 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
       style: 'subtitle'
     });
     
+    // Add report type header
+    const reportTypeTitles: Record<string, string> = {
+      'summary': 'LAPORAN RINGKASAN KEHADIRAN',
+      'detailed': 'LAPORAN DETAIL KEHADIRAN SISWA',
+      'class': 'LAPORAN KEHADIRAN PER KELAS',
+      'promotion': 'LAPORAN KENAIKAN KELAS',
+      'performance': 'LAPORAN STATISTIK PERFORMA KEHADIRAN',
+      'attendance': 'LAPORAN KEHADIRAN SISWA'
+    };
+    
+    docDefinition.content.push({
+      text: reportTypeTitles[reportType] || `LAPORAN ${reportType.toUpperCase()}`,
+      style: 'subheader'
+    });
+    
     // Add date and school info
     const now = new Date();
     docDefinition.content.push({
       text: `Tanggal: ${now.toLocaleDateString('id-ID')}`,
       style: 'date'
+    });
+    
+    // Add separator line
+    docDefinition.content.push({
+      canvas: [
+        {
+          type: 'line',
+          x1: 0, y1: 0,
+          x2: 515, y2: 0,
+          lineWidth: 1,
+          lineColor: '#cbd5e1'
+        }
+      ],
+      margin: [0, 10, 0, 20]
     });
     
     // Add content based on report type with enhanced formatting
@@ -258,9 +318,6 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
   // Add summary section with enhanced styling
   docDefinition.content.push({ text: 'RINGKASAN LAPORAN KEHADIRAN', style: 'subheader' });
   
-  // Add some spacing
-  docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
-  
   // Attendance stats with card-like design to match UI
   const totalStudents = reportData.attendanceStats?.totalStudents || 0;
   const present = reportData.attendanceStats?.present || 0;
@@ -272,8 +329,7 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
   // Add attendance summary cards
   docDefinition.content.push({
     text: 'Statistik Kehadiran Siswa',
-    style: 'cardTitle',
-    margin: [0, 10, 0, 5]
+    style: 'cardTitle'
   });
   
   // Create a table with card-like appearance for attendance stats
@@ -329,7 +385,7 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
       hLineWidth: () => 0,
       vLineWidth: () => 0,
     },
-    margin: [0, 0, 0, 15]
+    margin: [0, 0, 0, 20]
   });
   
   // Add overall attendance rate
@@ -337,7 +393,7 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
     text: `Tingkat Kehadiran Keseluruhan: ${safeText(attendanceRate)}%`,
     style: 'cardLabel',
     bold: true,
-    margin: [0, 0, 0, 20]
+    margin: [0, 0, 0, 25]
   });
   
   // Promotion stats if available with card-like design
@@ -350,14 +406,10 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
   if (reportData.promotionStats) {
     docDefinition.content.push({ text: 'STATISTIK KENAIKAN KELAS', style: 'subheader' });
     
-    // Add some spacing
-    docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
-    
     // Add promotion summary cards
     docDefinition.content.push({
       text: 'Status Kenaikan Kelas Siswa',
-      style: 'cardTitle',
-      margin: [0, 10, 0, 5]
+      style: 'cardTitle'
     });
     
     // Create a table with card-like appearance for promotion stats
@@ -413,12 +465,42 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
       },
-      margin: [0, 0, 0, 15]
+      margin: [0, 0, 0, 25]
+    });
+    
+    // Add detailed promotion stats table
+    docDefinition.content.push({ text: 'DETAIL STATISTIK KENAIKAN KELAS', style: 'sectionHeader' });
+    
+    const promotionTableBody = [
+      [{ text: 'KATEGORI', style: 'tableHeader' }, { text: 'JUMLAH', style: 'tableHeader' }, { text: 'PERSENTASE', style: 'tableHeader' }],
+      [{ text: 'Naik Kelas', style: 'tableCell' }, { text: safeText(promoted), style: 'tableCell' }, { text: totalPromotion ? `${((promoted/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }],
+      [{ text: 'Tinggal Kelas', style: 'tableCell' }, { text: safeText(retained), style: 'tableCell' }, { text: totalPromotion ? `${((retained/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }],
+      [{ text: 'Lulus', style: 'tableCell' }, { text: safeText(graduated), style: 'tableCell' }, { text: totalPromotion ? `${((graduated/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }],
+      [{ text: 'Belum Ditentukan', style: 'tableCell' }, { text: safeText(undecided), style: 'tableCell' }, { text: totalPromotion ? `${((undecided/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }]
+    ];
+    
+    docDefinition.content.push({
+      table: {
+        headerRows: 1,
+        widths: ['*', '*', '*'],
+        body: promotionTableBody
+      },
+      layout: {
+        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2563eb' : null),
+        hLineWidth: (i: number, tableNode: any) => {
+          if (i === 0 || i === tableNode.table.body.length) return 2;
+          return (i === 1) ? 1 : 1;
+        },
+        vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
+        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
+        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
+      },
+      margin: [0, 0, 0, 25]
     });
   }
   
   // Add detailed attendance table
-  docDefinition.content.push({ text: 'DETAIL STATISTIK KEHADIRAN', style: 'subheader' });
+  docDefinition.content.push({ text: 'DETAIL STATISTIK KEHADIRAN', style: 'sectionHeader' });
   
   const attendanceTableBody = [
     [{ text: 'KATEGORI', style: 'tableHeader' }, { text: 'JUMLAH', style: 'tableHeader' }, { text: 'PERSENTASE', style: 'tableHeader' }],
@@ -446,53 +528,19 @@ function generateSummaryContent(docDefinition: any, reportData: any) {
       hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
       vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
     },
-    margin: [0, 0, 0, 20]
+    margin: [0, 0, 0, 25]
   });
   
-  // Add spacing
-  docDefinition.content.push({ text: '', margin: [0, 10, 0, 10] });
-  
-  // Promotion stats table if available
-  if (reportData.promotionStats) {
-    docDefinition.content.push({ text: 'DETAIL STATISTIK KENAIKAN KELAS', style: 'subheader' });
-    
-    // Add some spacing
-    docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
-    
-    const promotionTableBody = [
-      [{ text: 'KATEGORI', style: 'tableHeader' }, { text: 'JUMLAH', style: 'tableHeader' }, { text: 'PERSENTASE', style: 'tableHeader' }],
-      [{ text: 'Naik Kelas', style: 'tableCell' }, { text: safeText(promoted), style: 'tableCell' }, { text: totalPromotion ? `${((promoted/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }],
-      [{ text: 'Tinggal Kelas', style: 'tableCell' }, { text: safeText(retained), style: 'tableCell' }, { text: totalPromotion ? `${((retained/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }],
-      [{ text: 'Lulus', style: 'tableCell' }, { text: safeText(graduated), style: 'tableCell' }, { text: totalPromotion ? `${((graduated/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }],
-      [{ text: 'Belum Ditentukan', style: 'tableCell' }, { text: safeText(undecided), style: 'tableCell' }, { text: totalPromotion ? `${((undecided/totalPromotion)*100).toFixed(2)}%` : '0%', style: 'tableCell' }]
-    ];
-    
-    docDefinition.content.push({
-      table: {
-        headerRows: 1,
-        widths: ['*', '*', '*'],
-        body: promotionTableBody
-      },
-      layout: {
-        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2563eb' : null),
-        hLineWidth: (i: number, tableNode: any) => {
-          if (i === 0 || i === tableNode.table.body.length) return 2;
-          return (i === 1) ? 1 : 1;
-        },
-        vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
-        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
-        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
-      }
-    });
-  }
+  // Add note about the report
+  docDefinition.content.push({
+    text: 'Laporan ini dihasilkan secara otomatis oleh sistem monitoring kehadiran dan kenaikan kelas.',
+    style: 'note'
+  });
 }
 
 function generateDetailedContent(docDefinition: any, reportData: any) {
   // Add detailed section with enhanced styling
   docDefinition.content.push({ text: 'DETAIL LAPORAN SISWA', style: 'subheader' });
-  
-  // Add some spacing
-  docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
   
   if (reportData.students && reportData.students.length > 0) {
     // Create table header to match UI exactly
@@ -532,15 +580,22 @@ function generateDetailedContent(docDefinition: any, reportData: any) {
         body: tableBody
       },
       layout: {
-        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2c3e50' : null),
+        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2563eb' : null),
         hLineWidth: (i: number, tableNode: any) => {
           if (i === 0 || i === tableNode.table.body.length) return 2;
           return (i === 1) ? 1 : 1;
         },
         vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
-        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2c3e50' : '#cccccc',
-        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2c3e50' : '#cccccc',
-      }
+        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
+        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
+      },
+      margin: [0, 0, 0, 25]
+    });
+    
+    // Add note about the report
+    docDefinition.content.push({
+      text: `Total siswa: ${reportData.students.length}`,
+      style: 'note'
     });
   } else {
     docDefinition.content.push({ text: 'Tidak ada data siswa tersedia', margin: [0, 10, 0, 0] });
@@ -550,9 +605,6 @@ function generateDetailedContent(docDefinition: any, reportData: any) {
 function generateClassContent(docDefinition: any, reportData: any) {
   // Add class section with enhanced styling
   docDefinition.content.push({ text: 'LAPORAN PER KELAS', style: 'subheader' });
-  
-  // Add some spacing
-  docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
   
   if (reportData.classReports && reportData.classReports.length > 0) {
     // Create table header to match UI exactly
@@ -594,15 +646,22 @@ function generateClassContent(docDefinition: any, reportData: any) {
         body: tableBody
       },
       layout: {
-        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2c3e50' : null),
+        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2563eb' : null),
         hLineWidth: (i: number, tableNode: any) => {
           if (i === 0 || i === tableNode.table.body.length) return 2;
           return (i === 1) ? 1 : 1;
         },
         vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
-        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2c3e50' : '#cccccc',
-        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2c3e50' : '#cccccc',
-      }
+        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
+        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
+      },
+      margin: [0, 0, 0, 25]
+    });
+    
+    // Add note about the report
+    docDefinition.content.push({
+      text: `Total kelas: ${reportData.classReports.length}`,
+      style: 'note'
     });
   } else {
     docDefinition.content.push({ text: 'Tidak ada data kelas tersedia', margin: [0, 10, 0, 0] });
@@ -612,9 +671,6 @@ function generateClassContent(docDefinition: any, reportData: any) {
 function generatePromotionContent(docDefinition: any, reportData: any) {
   // Add promotion section with enhanced styling
   docDefinition.content.push({ text: 'LAPORAN KENAIKAN KELAS', style: 'subheader' });
-  
-  // Add some spacing
-  docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
   
   // Promotion stats table
   if (reportData.promotionStats) {
@@ -636,16 +692,25 @@ function generatePromotionContent(docDefinition: any, reportData: any) {
         fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2563eb' : null),
         hLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? 2 : 1,
         vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
-        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? 'black' : '#aaa',
-        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 'black' : '#aaa',
+        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
+        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
       },
-      margin: [0, 0, 0, 20]
+      margin: [0, 0, 0, 25]
+    });
+    
+    // Add note about the report
+    const totalPromotion = reportData.promotionStats.promoted + reportData.promotionStats.retained + 
+                          reportData.promotionStats.graduated + reportData.promotionStats.undecided;
+    docDefinition.content.push({
+      text: `Total siswa: ${totalPromotion}`,
+      style: 'note',
+      margin: [0, 0, 0, 25]
     });
   }
   
   // Detailed student stats
   if (reportData.detailedStats && reportData.detailedStats.length > 0) {
-    docDefinition.content.push({ text: 'DETAIL STATISTIK SISWA', style: 'subheader' });
+    docDefinition.content.push({ text: 'DETAIL STATISTIK SISWA', style: 'sectionHeader' });
     
     // Create table header to match UI exactly
     const tableBody = [
@@ -682,15 +747,22 @@ function generatePromotionContent(docDefinition: any, reportData: any) {
         body: tableBody
       },
       layout: {
-        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2c3e50' : null),
+        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#2563eb' : null),
         hLineWidth: (i: number, tableNode: any) => {
           if (i === 0 || i === tableNode.table.body.length) return 2;
           return (i === 1) ? 1 : 1;
         },
         vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
-        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2c3e50' : '#cccccc',
-        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2c3e50' : '#cccccc',
-      }
+        hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
+        vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
+      },
+      margin: [0, 0, 0, 25]
+    });
+    
+    // Add note about the report
+    docDefinition.content.push({
+      text: `Total siswa dalam detail: ${reportData.detailedStats.length}`,
+      style: 'note'
     });
   } else {
     docDefinition.content.push({ text: 'Tidak ada data statistik siswa tersedia', margin: [0, 10, 0, 0] });
@@ -701,9 +773,6 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
   // Add performance section with enhanced styling
   docDefinition.content.push({ text: 'STATISTIK PERFORMA KEHADIRAN', style: 'subheader' });
   
-  // Add some spacing
-  docDefinition.content.push({ text: '', margin: [0, 0, 0, 5] });
-  
   // Performance stats with card-like design to match UI
   const perfectAttendance = reportData.performanceData?.perfectAttendance || 0;
   const highAttendance = reportData.performanceData?.highAttendance || 0;
@@ -713,8 +782,7 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
   // Add performance summary cards
   docDefinition.content.push({
     text: 'Kategori Kehadiran Siswa',
-    style: 'cardTitle',
-    margin: [0, 10, 0, 5]
+    style: 'cardTitle'
   });
   
   // Create a table with card-like appearance for performance stats
@@ -744,12 +812,12 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
       hLineWidth: () => 0,
       vLineWidth: () => 0,
     },
-    margin: [0, 0, 0, 15]
+    margin: [0, 0, 0, 25]
   });
   
   // Add most late students
   if (reportData.performanceData?.mostLate && reportData.performanceData.mostLate.length > 0) {
-    docDefinition.content.push({ text: 'SISWA TERLAMBAT TERBANYAK', style: 'subheader' });
+    docDefinition.content.push({ text: 'SISWA TERLAMBAT TERBANYAK', style: 'sectionHeader' });
     
     const mostLateTableBody = [
       [
@@ -785,13 +853,13 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
         hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
         vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
       },
-      margin: [0, 0, 0, 15]
+      margin: [0, 0, 0, 25]
     });
   }
   
   // Add most absent students
   if (reportData.performanceData?.mostAbsent && reportData.performanceData.mostAbsent.length > 0) {
-    docDefinition.content.push({ text: 'SISWA TIDAK HADIR TERBANYAK', style: 'subheader' });
+    docDefinition.content.push({ text: 'SISWA TIDAK HADIR TERBANYAK', style: 'sectionHeader' });
     
     const mostAbsentTableBody = [
       [
@@ -826,7 +894,8 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
         vLineWidth: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? 2 : 1,
         hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
         vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
-      }
+      },
+      margin: [0, 0, 0, 25]
     });
   }
   
@@ -840,7 +909,7 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
     const attendanceRate = reportData.attendanceStats.attendanceRate || 0;
     
     // Add detailed attendance table
-    docDefinition.content.push({ text: 'DETAIL STATISTIK KEHADIRAN', style: 'subheader' });
+    docDefinition.content.push({ text: 'DETAIL STATISTIK KEHADIRAN', style: 'sectionHeader' });
     
     const attendanceTableBody = [
       [{ text: 'KATEGORI', style: 'tableHeader' }, { text: 'JUMLAH', style: 'tableHeader' }, { text: 'PERSENTASE', style: 'tableHeader' }],
@@ -868,7 +937,13 @@ function generatePerformanceContent(docDefinition: any, reportData: any) {
         hLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.body.length) ? '#2563eb' : '#cccccc',
         vLineColor: (i: number, tableNode: any) => (i === 0 || i === tableNode.table.widths.length) ? '#2563eb' : '#cccccc',
       },
-      margin: [0, 0, 0, 20]
+      margin: [0, 0, 0, 25]
+    });
+    
+    // Add note about the report
+    docDefinition.content.push({
+      text: 'Laporan ini menunjukkan statistik performa kehadiran siswa berdasarkan data yang tersedia.',
+      style: 'note'
     });
   }
 }
