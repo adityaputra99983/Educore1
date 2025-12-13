@@ -41,7 +41,8 @@
     "**/*.mts",
     "**/*.js",
     "**/*.jsx",
-    "**/*.mjs"
+    "**/*.mjs",
+    "src/types/**/*.d.ts"
   ],
   "exclude": ["node_modules"]
 }
