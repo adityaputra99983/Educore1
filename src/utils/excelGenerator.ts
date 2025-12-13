@@ -20,7 +20,9 @@ export async function generateExcelReport(reportData: any, reportType: string): 
       Title: "Laporan Kehadiran dan Kenaikan Kelas",
       Subject: "Laporan Resmi",
       Author: "Sistem Monitoring Sekolah",
-      CreatedDate: new Date()
+      CreatedDate: new Date(),
+      Keywords: "laporan; kehadiran; kenaikan kelas; sekolah",
+      Category: "Education"
     };
     
     // Add worksheets based on report type with enhanced formatting
@@ -54,10 +56,11 @@ export async function generateExcelReport(reportData: any, reportType: string): 
 }
 
 function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
-  // Create summary data with better formatting and styling
+  // Create summary data with better formatting and styling to match PDF template
   const summaryData = [
     ['LAPORAN RESMI'],
     ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+    ['SMA NEGERI 1 JAKARTA'],
     [new Date().toLocaleDateString('id-ID')],
     [], // Empty row
   ];
@@ -130,6 +133,18 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
     
     // Add empty row for separation
     summaryData.push([]);
+    
+    // Add detailed promotion stats if available
+    summaryData.push(['DETAIL STATISTIK KENAIKAN KELAS']);
+    summaryData.push(['Kategori', 'Jumlah', 'Persentase']);
+    
+    summaryData.push(['Naik Kelas', promoted, totalPromotion ? `${((promoted/totalPromotion)*100).toFixed(2)}%` : '0%']);
+    summaryData.push(['Tinggal Kelas', retained, totalPromotion ? `${((retained/totalPromotion)*100).toFixed(2)}%` : '0%']);
+    summaryData.push(['Lulus', graduated, totalPromotion ? `${((graduated/totalPromotion)*100).toFixed(2)}%` : '0%']);
+    summaryData.push(['Belum Ditentukan', undecided, totalPromotion ? `${((undecided/totalPromotion)*100).toFixed(2)}%` : '0%']);
+    
+    // Add empty row for separation
+    summaryData.push([]);
   }
   
   // Add detailed attendance statistics table
@@ -146,29 +161,15 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
   // Add empty row for separation
   summaryData.push([]);
   
-  // Add detailed promotion stats if available
-  if (reportData.promotionStats) {
-    const promoted = reportData.promotionStats.promoted || 0;
-    const retained = reportData.promotionStats.retained || 0;
-    const graduated = reportData.promotionStats.graduated || 0;
-    const undecided = reportData.promotionStats.undecided || 0;
-    const totalPromotion = promoted + retained + graduated + undecided;
-    
-    summaryData.push(['DETAIL STATISTIK KENAIKAN KELAS']);
-    summaryData.push(['Kategori', 'Jumlah', 'Persentase']);
-    
-    summaryData.push(['Naik Kelas', promoted, totalPromotion ? `${((promoted/totalPromotion)*100).toFixed(2)}%` : '0%']);
-    summaryData.push(['Tinggal Kelas', retained, totalPromotion ? `${((retained/totalPromotion)*100).toFixed(2)}%` : '0%']);
-    summaryData.push(['Lulus', graduated, totalPromotion ? `${((graduated/totalPromotion)*100).toFixed(2)}%` : '0%']);
-    summaryData.push(['Belum Ditentukan', undecided, totalPromotion ? `${((undecided/totalPromotion)*100).toFixed(2)}%` : '0%']);
-  }
+  // Add footer note
+  summaryData.push(['Laporan ini dihasilkan secara otomatis oleh sistem monitoring kehadiran dan kenaikan kelas.']);
   
   const ws = XLSX.utils.aoa_to_sheet(summaryData);
   
   // Style the title rows
   if (ws['A1']) {
     ws['A1'].s = { 
-      font: { sz: 18, bold: true, color: { rgb: "FF1E40AF" } },
+      font: { sz: 20, bold: true, color: { rgb: "FF1E40AF" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for title
@@ -177,7 +178,7 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A2']) {
     ws['A2'].s = { 
-      font: { sz: 16, bold: true, color: { rgb: "FF3B82F6" } },
+      font: { sz: 18, bold: true, color: { rgb: "FF3B82F6" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for subtitle
@@ -187,13 +188,37 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A3']) {
     ws['A3'].s = { 
-      font: { sz: 11, italic: true, color: { rgb: "FF64748B" } },
+      font: { sz: 12, italic: true, color: { rgb: "FF64748B" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for date
     if (!ws['!merges']) ws['!merges'] = [];
     ws['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: 3 } });
   }
+  
+  // Style section headers
+  const sectionHeaders = [
+    'STATISTIK KEHADIRAN SISWA',
+    'STATUS KENAIKAN KELAS SISWA',
+    'DETAIL STATISTIK KEHADIRAN',
+    'DETAIL STATISTIK KENAIKAN KELAS'
+  ];
+  
+  sectionHeaders.forEach(headerText => {
+    const headerRow = summaryData.findIndex(row => row[0] === headerText);
+    if (headerRow >= 0) {
+      const cellRef = XLSX.utils.encode_cell({ r: headerRow, c: 0 });
+      if (ws[cellRef]) {
+        ws[cellRef].s = { 
+          font: { sz: 14, bold: true, color: { rgb: "FF1E40AF" } },
+          alignment: { horizontal: "left" }
+        };
+        // Merge cells for section header
+        if (!ws['!merges']) ws['!merges'] = [];
+        ws['!merges'].push({ s: { r: headerRow, c: 0 }, e: { r: headerRow, c: 3 } });
+      }
+    }
+  });
   
   // Style the card headers
   const attendanceCardHeaderRow = summaryData.findIndex(row => row[0] === 'HADIR' && row.length === 4);
@@ -219,7 +244,7 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
       const cellRef = XLSX.utils.encode_cell({ r: attendanceCardValueRow, c: i });
       if (ws[cellRef]) {
         ws[cellRef].s = { 
-          font: { sz: 14, bold: true },
+          font: { sz: 16, bold: true },
           alignment: { horizontal: "center" }
         };
       }
@@ -234,7 +259,7 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
       const cellRef = XLSX.utils.encode_cell({ r: attendanceCardPercentRow, c: i });
       if (ws[cellRef]) {
         ws[cellRef].s = { 
-          font: { sz: 9, color: { rgb: colors[i] } },
+          font: { sz: 10, color: { rgb: colors[i] } },
           alignment: { horizontal: "center" }
         };
       }
@@ -247,7 +272,7 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
     const cellRef = XLSX.utils.encode_cell({ r: overallAttendanceRow, c: 0 });
     if (ws[cellRef]) {
       ws[cellRef].s = { 
-        font: { sz: 12, bold: true, color: { rgb: "FF1E40AF" } },
+        font: { sz: 14, bold: true, color: { rgb: "FF1E40AF" } },
         alignment: { horizontal: "left" }
       };
       // Merge cells
@@ -281,7 +306,7 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
         const cellRef = XLSX.utils.encode_cell({ r: promotionCardValueRow, c: i });
         if (ws[cellRef]) {
           ws[cellRef].s = { 
-            font: { sz: 14, bold: true },
+            font: { sz: 16, bold: true },
             alignment: { horizontal: "center" }
           };
         }
@@ -296,7 +321,7 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
         const cellRef = XLSX.utils.encode_cell({ r: promotionCardPercentRow, c: i });
         if (ws[cellRef]) {
           ws[cellRef].s = { 
-            font: { sz: 9, color: { rgb: colors[i] } },
+            font: { sz: 10, color: { rgb: colors[i] } },
             alignment: { horizontal: "center" }
           };
         }
@@ -307,18 +332,6 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
   // Style the detailed statistics headers
   const attendanceDetailHeaderRow = summaryData.findIndex(row => row[0] === 'Kategori' && row[1] === 'Jumlah' && row[2] === 'Persentase');
   if (attendanceDetailHeaderRow >= 0) {
-    // Find the row before this which should be the section header
-    const sectionHeaderRow = attendanceDetailHeaderRow - 1;
-    if (sectionHeaderRow >= 0 && ws[`A${sectionHeaderRow + 1}`]) {
-      ws[`A${sectionHeaderRow + 1}`].s = { 
-        font: { sz: 12, bold: true, color: { rgb: "FF1E40AF" } },
-        alignment: { horizontal: "left" }
-      };
-      // Merge cells for section header
-      if (!ws['!merges']) ws['!merges'] = [];
-      ws['!merges'].push({ s: { r: sectionHeaderRow, c: 0 }, e: { r: sectionHeaderRow, c: 2 } });
-    }
-    
     // Style the table header
     for (let i = 0; i < 3; i++) {
       const cellRef = XLSX.utils.encode_cell({ r: attendanceDetailHeaderRow, c: i });
@@ -343,18 +356,6 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
     );
     
     if (promotionDetailHeaderRow >= 0) {
-      // Find the row before this which should be the section header
-      const sectionHeaderRow = promotionDetailHeaderRow - 1;
-      if (sectionHeaderRow >= 0 && ws[`A${sectionHeaderRow + 1}`]) {
-        ws[`A${sectionHeaderRow + 1}`].s = { 
-          font: { sz: 12, bold: true, color: { rgb: "FF1E40AF" } },
-          alignment: { horizontal: "left" }
-        };
-        // Merge cells for section header
-        if (!ws['!merges']) ws['!merges'] = [];
-        ws['!merges'].push({ s: { r: sectionHeaderRow, c: 0 }, e: { r: sectionHeaderRow, c: 2 } });
-      }
-      
       // Style the table header
       for (let i = 0; i < 3; i++) {
         const cellRef = XLSX.utils.encode_cell({ r: promotionDetailHeaderRow, c: i });
@@ -369,9 +370,39 @@ function addSummaryWorksheet(wb: any, reportData: any, XLSX: any) {
     }
   }
   
+  // Style data rows
+  for (let r = 0; r < summaryData.length; r++) {
+    for (let c = 0; c < summaryData[r].length; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c });
+      if (!ws[cellRef] || ws[cellRef].s) continue; // Skip if already styled
+      
+      // Style data cells
+      if (r > attendanceDetailHeaderRow && summaryData[r][0] !== 'Kategori') {
+        ws[cellRef].s = { 
+          alignment: { horizontal: c === 0 ? "left" : "center" }
+        };
+      }
+    }
+  }
+  
+  // Style footer note
+  const footerRow = summaryData.findIndex(row => row[0] && row[0].includes('Laporan ini dihasilkan'));
+  if (footerRow >= 0) {
+    const cellRef = XLSX.utils.encode_cell({ r: footerRow, c: 0 });
+    if (ws[cellRef]) {
+      ws[cellRef].s = { 
+        font: { sz: 10, color: { rgb: "FF64748B" }, italic: true },
+        alignment: { horizontal: "left" }
+      };
+      // Merge cells
+      if (!ws['!merges']) ws['!merges'] = [];
+      ws['!merges'].push({ s: { r: footerRow, c: 0 }, e: { r: footerRow, c: 3 } });
+    }
+  }
+  
   // Auto-adjust column widths
   const colWidths = [
-    { wch: 25 }, // Kategori
+    { wch: 30 }, // Kategori
     { wch: 15 }, // Jumlah
     { wch: 15 }, // Persentase
     { wch: 15 }  // Additional column for card layout
@@ -411,11 +442,14 @@ function addDetailedWorksheet(wb: any, reportData: any, XLSX: any) {
   // Combine headers and data with title section
   const worksheetData = [
     ['LAPORAN RESMI'],
-    ['DETAIL LAPORAN SISWA'],
+    ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+    ['SMA NEGERI 1 JAKARTA'],
     [new Date().toLocaleDateString('id-ID')],
     [], // Empty row
     headers,
-    ...dataRows
+    ...dataRows,
+    [], // Empty row
+    [`Total siswa: ${dataRows.length}`] // Footer note
   ];
   
   const ws = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -423,7 +457,7 @@ function addDetailedWorksheet(wb: any, reportData: any, XLSX: any) {
   // Style the title rows
   if (ws['A1']) {
     ws['A1'].s = { 
-      font: { sz: 16, bold: true, color: { rgb: "FF2563EB" } },
+      font: { sz: 18, bold: true, color: { rgb: "FF2563EB" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for title
@@ -432,7 +466,7 @@ function addDetailedWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A2']) {
     ws['A2'].s = { 
-      font: { sz: 14, bold: true },
+      font: { sz: 16, bold: true, color: { rgb: "FF1E40AF" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for subtitle
@@ -442,7 +476,7 @@ function addDetailedWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A3']) {
     ws['A3'].s = { 
-      font: { sz: 10, italic: true },
+      font: { sz: 11, italic: true, color: { rgb: "FF64748B" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for date
@@ -461,10 +495,35 @@ function addDetailedWorksheet(wb: any, reportData: any, XLSX: any) {
     };
   }
   
+  // Style data rows
+  for (let r = 5; r < 5 + dataRows.length; r++) {
+    for (let c = 0; c < headers.length; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c });
+      if (!ws[cellRef]) continue;
+      
+      // Style data cells
+      ws[cellRef].s = { 
+        alignment: { horizontal: c === 1 ? "left" : "center" }
+      };
+    }
+  }
+  
+  // Style footer note
+  const footerRow = 5 + dataRows.length + 1; // +1 for empty row
+  if (ws[`A${footerRow + 1}`]) {
+    ws[`A${footerRow + 1}`].s = { 
+      font: { sz: 10, color: { rgb: "FF64748B" }, italic: true },
+      alignment: { horizontal: "left" }
+    };
+    // Merge cells for footer
+    if (!ws['!merges']) ws['!merges'] = [];
+    ws['!merges'].push({ s: { r: footerRow, c: 0 }, e: { r: footerRow, c: 8 } });
+  }
+  
   // Auto-adjust column widths
   const colWidths = [
-    { wch: 12 }, // NIS
-    { wch: 25 }, // Nama Siswa
+    { wch: 15 }, // NIS
+    { wch: 30 }, // Nama Siswa
     { wch: 12 }, // Kelas
     { wch: 8 },  // Hadir
     { wch: 12 }, // Terlambat
@@ -510,11 +569,14 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
   // Combine headers and data with title section
   const worksheetData = [
     ['LAPORAN RESMI'],
-    ['LAPORAN PER KELAS'],
+    ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+    ['SMA NEGERI 1 JAKARTA'],
     [new Date().toLocaleDateString('id-ID')],
     [], // Empty row
     headers,
-    ...dataRows
+    ...dataRows,
+    [], // Empty row
+    [`Total kelas: ${dataRows.length}`] // Footer note
   ];
   
   const ws = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -522,7 +584,7 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
   // Style the title rows
   if (ws['A1']) {
     ws['A1'].s = { 
-      font: { sz: 16, bold: true, color: { rgb: "FF2563EB" } },
+      font: { sz: 18, bold: true, color: { rgb: "FF2563EB" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for title
@@ -531,7 +593,7 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A2']) {
     ws['A2'].s = { 
-      font: { sz: 14, bold: true },
+      font: { sz: 16, bold: true, color: { rgb: "FF1E40AF" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for subtitle
@@ -541,7 +603,7 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A3']) {
     ws['A3'].s = { 
-      font: { sz: 10, italic: true },
+      font: { sz: 11, italic: true, color: { rgb: "FF64748B" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for date
@@ -560,9 +622,34 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
     };
   }
   
+  // Style data rows
+  for (let r = 5; r < 5 + dataRows.length; r++) {
+    for (let c = 0; c < headers.length; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c });
+      if (!ws[cellRef]) continue;
+      
+      // Style data cells
+      ws[cellRef].s = { 
+        alignment: { horizontal: c === 0 ? "left" : "center" }
+      };
+    }
+  }
+  
+  // Style footer note
+  const footerRow = 5 + dataRows.length + 1; // +1 for empty row
+  if (ws[`A${footerRow + 1}`]) {
+    ws[`A${footerRow + 1}`].s = { 
+      font: { sz: 10, color: { rgb: "FF64748B" }, italic: true },
+      alignment: { horizontal: "left" }
+    };
+    // Merge cells for footer
+    if (!ws['!merges']) ws['!merges'] = [];
+    ws['!merges'].push({ s: { r: footerRow, c: 0 }, e: { r: footerRow, c: 9 } });
+  }
+  
   // Auto-adjust column widths
   const colWidths = [
-    { wch: 12 }, // Kelas
+    { wch: 15 }, // Kelas
     { wch: 15 }, // Jumlah Siswa
     { wch: 8 },  // Hadir
     { wch: 12 }, // Terlambat
@@ -580,17 +667,26 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
 
 function addPromotionWorksheet(wb: any, reportData: any, XLSX: any) {
   // Create promotion stats data with enhanced formatting
+  const promoted = reportData.promotionStats?.promoted || 0;
+  const retained = reportData.promotionStats?.retained || 0;
+  const graduated = reportData.promotionStats?.graduated || 0;
+  const undecided = reportData.promotionStats?.undecided || 0;
+  const totalPromotion = promoted + retained + graduated + undecided;
+  
   const promotionData = [
     ['LAPORAN RESMI'],
-    ['LAPORAN KENAIKAN KELAS'],
+    ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+    ['SMA NEGERI 1 JAKARTA'],
     [new Date().toLocaleDateString('id-ID')],
     [], // Empty row
     ['STATISTIK KENAIKAN KELAS'],
-    ['Kategori', 'Jumlah'],
-    ['Naik Kelas', reportData.promotionStats?.promoted || 0],
-    ['Tinggal Kelas', reportData.promotionStats?.retained || 0],
-    ['Lulus', reportData.promotionStats?.graduated || 0],
-    ['Belum Ditentukan', reportData.promotionStats?.undecided || 0]
+    ['Kategori', 'Jumlah', 'Persentase'],
+    ['Naik Kelas', promoted, totalPromotion ? `${((promoted/totalPromotion)*100).toFixed(2)}%` : '0%'],
+    ['Tinggal Kelas', retained, totalPromotion ? `${((retained/totalPromotion)*100).toFixed(2)}%` : '0%'],
+    ['Lulus', graduated, totalPromotion ? `${((graduated/totalPromotion)*100).toFixed(2)}%` : '0%'],
+    ['Belum Ditentukan', undecided, totalPromotion ? `${((undecided/totalPromotion)*100).toFixed(2)}%` : '0%'],
+    [], // Empty row
+    [`Total siswa: ${totalPromotion}`] // Footer note
   ];
   
   const ws1 = XLSX.utils.aoa_to_sheet(promotionData);
@@ -598,31 +694,31 @@ function addPromotionWorksheet(wb: any, reportData: any, XLSX: any) {
   // Style the title rows
   if (ws1['A1']) {
     ws1['A1'].s = { 
-      font: { sz: 16, bold: true, color: { rgb: "FF2563EB" } },
+      font: { sz: 18, bold: true, color: { rgb: "FF2563EB" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for title
-    ws1['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    ws1['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
   }
   
   if (ws1['A2']) {
     ws1['A2'].s = { 
-      font: { sz: 14, bold: true },
+      font: { sz: 16, bold: true, color: { rgb: "FF1E40AF" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for subtitle
     if (!ws1['!merges']) ws1['!merges'] = [];
-    ws1['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 1 } });
+    ws1['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 2 } });
   }
   
   if (ws1['A3']) {
     ws1['A3'].s = { 
-      font: { sz: 10, italic: true },
+      font: { sz: 11, italic: true, color: { rgb: "FF64748B" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for date
     if (!ws1['!merges']) ws1['!merges'] = [];
-    ws1['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: 1 } });
+    ws1['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: 2 } });
   }
   
   // Style the header rows
@@ -630,28 +726,54 @@ function addPromotionWorksheet(wb: any, reportData: any, XLSX: any) {
   if (headerRow >= 0) {
     if (ws1[`A${headerRow + 1}`]) {
       ws1[`A${headerRow + 1}`].s = { 
-        font: { bold: true, color: { rgb: "FFFFFFFF" } }, 
-        fill: { fgColor: { rgb: "FF2563EB" } },
-        alignment: { horizontal: "center" }
+        font: { sz: 14, bold: true, color: { rgb: "FF1E40AF" } },
+        alignment: { horizontal: "left" }
       };
       // Merge cells for section header
       if (!ws1['!merges']) ws1['!merges'] = [];
-      ws1['!merges'].push({ s: { r: headerRow, c: 0 }, e: { r: headerRow, c: 1 } });
+      ws1['!merges'].push({ s: { r: headerRow, c: 0 }, e: { r: headerRow, c: 2 } });
     }
     
+    // Style table header
     if (ws1[`A${headerRow + 2}`]) {
       ws1[`A${headerRow + 2}`].s = { 
         font: { bold: true, color: { rgb: "FFFFFFFF" } }, 
-        fill: { fgColor: { rgb: "FF3B82F6" } },
+        fill: { fgColor: { rgb: "FF2563EB" } },
         alignment: { horizontal: "center" }
       };
     }
   }
   
+  // Style data rows
+  for (let r = headerRow + 3; r < headerRow + 7; r++) {
+    for (let c = 0; c < 3; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c });
+      if (!ws1[cellRef]) continue;
+      
+      // Style data cells
+      ws1[cellRef].s = { 
+        alignment: { horizontal: c === 0 ? "left" : "center" }
+      };
+    }
+  }
+  
+  // Style footer note
+  const footerRow = headerRow + 8; // +7 data rows + 1 empty row
+  if (ws1[`A${footerRow + 1}`]) {
+    ws1[`A${footerRow + 1}`].s = { 
+      font: { sz: 10, color: { rgb: "FF64748B" }, italic: true },
+      alignment: { horizontal: "left" }
+    };
+    // Merge cells for footer
+    if (!ws1['!merges']) ws1['!merges'] = [];
+    ws1['!merges'].push({ s: { r: footerRow, c: 0 }, e: { r: footerRow, c: 2 } });
+  }
+  
   // Auto-adjust column widths
   const colWidths1 = [
     { wch: 25 }, // Kategori
-    { wch: 15 }  // Jumlah
+    { wch: 15 }, // Jumlah
+    { wch: 15 }  // Persentase
   ];
   ws1['!cols'] = colWidths1;
   
@@ -686,7 +808,8 @@ function addPromotionWorksheet(wb: any, reportData: any, XLSX: any) {
     // Combine headers and data with title section
     const worksheetData = [
       ['LAPORAN RESMI'],
-      ['DETAIL STATISTIK SISWA'],
+      ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+      ['SMA NEGERI 1 JAKARTA'],
       [new Date().toLocaleDateString('id-ID')],
       [], // Empty row
       headers,
@@ -757,7 +880,8 @@ function addGenericWorksheet(wb: any, reportData: any, reportType: string, XLSX:
   // Create generic data with enhanced formatting
   const genericData = [
     ['LAPORAN RESMI'],
-    [`LAPORAN ${reportType.toUpperCase()}`],
+    ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+    ['SMA NEGERI 1 JAKARTA'],
     [new Date().toLocaleDateString('id-ID')],
     [], // Empty row
   ];
@@ -792,8 +916,8 @@ function addGenericWorksheet(wb: any, reportData: any, reportType: string, XLSX:
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: lastCol } }];
   }
   
-  if (genericData.length > 3 && ws['A4']) {
-    ws['A4'].s = { 
+  if (genericData.length > 4 && ws['A5']) {
+    ws['A5'].s = { 
       font: { bold: true, color: { rgb: "FFFFFFFF" } }, 
       fill: { fgColor: { rgb: "FF2563EB" } },
       alignment: { horizontal: "center" }
@@ -815,7 +939,8 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
   // Create performance data with better formatting and styling
   const performanceData = [
     ['LAPORAN RESMI'],
-    ['STATISTIK PERFORMA KEHADIRAN'],
+    ['SISTEM MONITORING KEHADIRAN DAN KENAIKAN KELAS'],
+    ['SMA NEGERI 1 JAKARTA'],
     [new Date().toLocaleDateString('id-ID')],
     [], // Empty row
   ];
@@ -887,7 +1012,7 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
     const permission = reportData.attendanceStats.permission || 0;
     const attendanceRate = reportData.attendanceStats.attendanceRate || 0;
     
-    performanceData.push(['STATISTIK KEHADIRAN']);
+    performanceData.push(['DETAIL STATISTIK KEHADIRAN']);
     performanceData.push(['Kategori', 'Jumlah', 'Persentase']);
     
     performanceData.push(['Total Siswa', totalStudents, '100%']);
@@ -898,12 +1023,16 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
     performanceData.push(['Tingkat Kehadiran', '', `${attendanceRate}%`]);
   }
   
+  // Add footer note
+  performanceData.push([]);
+  performanceData.push(['Laporan ini menunjukkan statistik performa kehadiran siswa berdasarkan data yang tersedia.']);
+  
   const ws = XLSX.utils.aoa_to_sheet(performanceData);
   
   // Style the title rows
   if (ws['A1']) {
     ws['A1'].s = { 
-      font: { sz: 18, bold: true, color: { rgb: "FF1E40AF" } },
+      font: { sz: 20, bold: true, color: { rgb: "FF1E40AF" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for title
@@ -912,7 +1041,7 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A2']) {
     ws['A2'].s = { 
-      font: { sz: 16, bold: true, color: { rgb: "FF3B82F6" } },
+      font: { sz: 18, bold: true, color: { rgb: "FF3B82F6" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for subtitle
@@ -922,13 +1051,37 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
   
   if (ws['A3']) {
     ws['A3'].s = { 
-      font: { sz: 11, italic: true, color: { rgb: "FF64748B" } },
+      font: { sz: 12, italic: true, color: { rgb: "FF64748B" } },
       alignment: { horizontal: "center" }
     };
     // Merge cells for date
     if (!ws['!merges']) ws['!merges'] = [];
     ws['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: 3 } });
   }
+  
+  // Style section headers
+  const sectionHeaders = [
+    'KATEGORI KEHADIRAN SISWA',
+    'SISWA TERLAMBAT TERBANYAK',
+    'SISWA TIDAK HADIR TERBANYAK',
+    'STATISTIK KEHADIRAN'
+  ];
+  
+  sectionHeaders.forEach(headerText => {
+    const headerRow = performanceData.findIndex(row => row[0] === headerText);
+    if (headerRow >= 0) {
+      const cellRef = XLSX.utils.encode_cell({ r: headerRow, c: 0 });
+      if (ws[cellRef]) {
+        ws[cellRef].s = { 
+          font: { sz: 14, bold: true, color: { rgb: "FF1E40AF" } },
+          alignment: { horizontal: "left" }
+        };
+        // Merge cells for section header
+        if (!ws['!merges']) ws['!merges'] = [];
+        ws['!merges'].push({ s: { r: headerRow, c: 0 }, e: { r: headerRow, c: 3 } });
+      }
+    }
+  });
   
   // Style the card headers
   const performanceCardHeaderRow = performanceData.findIndex(row => row[0] === 'KEHADIRAN SEMPURNA' && row.length === 4);
@@ -954,36 +1107,12 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
       const cellRef = XLSX.utils.encode_cell({ r: performanceCardValueRow, c: i });
       if (ws[cellRef]) {
         ws[cellRef].s = { 
-          font: { sz: 14, bold: true },
+          font: { sz: 16, bold: true },
           alignment: { horizontal: "center" }
         };
       }
     }
   }
-  
-  // Style section headers
-  const sectionHeaders = [
-    'KATEGORI KEHADIRAN SISWA',
-    'SISWA TERLAMBAT TERBANYAK',
-    'SISWA TIDAK HADIR TERBANYAK',
-    'STATISTIK KEHADIRAN'
-  ];
-  
-  sectionHeaders.forEach(headerText => {
-    const headerRow = performanceData.findIndex(row => row[0] === headerText);
-    if (headerRow >= 0) {
-      const cellRef = XLSX.utils.encode_cell({ r: headerRow, c: 0 });
-      if (ws[cellRef]) {
-        ws[cellRef].s = { 
-          font: { sz: 12, bold: true, color: { rgb: "FF1E40AF" } },
-          alignment: { horizontal: "left" }
-        };
-        // Merge cells for section header
-        if (!ws['!merges']) ws['!merges'] = [];
-        ws['!merges'].push({ s: { r: headerRow, c: 0 }, e: { r: headerRow, c: 3 } });
-      }
-    }
-  });
   
   // Style table headers
   const tableHeaders = [
@@ -1011,6 +1140,39 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
       }
     }
   });
+  
+  // Style data rows
+  // Find all data rows after table headers
+  for (let r = 0; r < performanceData.length; r++) {
+    // Skip rows that are already styled (headers, titles, etc.)
+    if (ws[XLSX.utils.encode_cell({ r, c: 0 })]?.s) continue;
+    
+    // Style data rows
+    for (let c = 0; c < performanceData[r].length; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c });
+      if (!ws[cellRef]) continue;
+      
+      // Style data cells
+      ws[cellRef].s = { 
+        alignment: { horizontal: c === 1 ? "left" : "center" }
+      };
+    }
+  }
+  
+  // Style footer note
+  const footerRow = performanceData.findIndex(row => row[0] && row[0].includes('Laporan ini menunjukkan'));
+  if (footerRow >= 0) {
+    const cellRef = XLSX.utils.encode_cell({ r: footerRow, c: 0 });
+    if (ws[cellRef]) {
+      ws[cellRef].s = { 
+        font: { sz: 10, color: { rgb: "FF64748B" }, italic: true },
+        alignment: { horizontal: "left" }
+      };
+      // Merge cells
+      if (!ws['!merges']) ws['!merges'] = [];
+      ws['!merges'].push({ s: { r: footerRow, c: 0 }, e: { r: footerRow, c: 3 } });
+    }
+  }
   
   // Auto-adjust column widths
   const colWidths = [
