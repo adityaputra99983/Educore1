@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
-import Student, { type IStudent } from '../../../models/Student';
+import Student from '../../../models/Student';
 
 // Helper function to calculate stats
 async function calculateAttendanceStats() {
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
     }
 
     // Build query
-    const query: any = {};
+    let query: Record<string, unknown> = {};
 
     if (classFilter && classFilter !== 'all') {
       query.class = classFilter;
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
       ];
     }
 
-    const filteredStudents = await Student.find(query);
+    const filteredStudents = await Student.find(query).lean();
 
     // Calculate stats
     const stats = await calculateAttendanceStats();
@@ -104,8 +104,8 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     await dbConnect();
-    const body = await request.json();
-    const { studentId, newStatus } = body;
+    const body = await request.json() as Record<string, unknown>;
+    const { studentId, newStatus } = body as { studentId: string; newStatus: string };
 
     // Validate input
     if (!studentId || !newStatus) {
@@ -151,9 +151,9 @@ export async function PUT(request: Request) {
       }, { status: 404 });
     }
 
-    let updatedLate = student.late || 0;
-    let updatedAbsent = student.absent || 0;
-    let updatedPermission = student.permission || 0;
+    let updatedLate = (student.late as number) || 0;
+    let updatedAbsent = (student.absent as number) || 0;
+    let updatedPermission = (student.permission as number) || 0;
 
     // Decrease previous status count (but not for 'belum-diisi')
     if (student.status !== 'belum-diisi') {
@@ -186,11 +186,11 @@ export async function PUT(request: Request) {
     }
 
     // Update cumulative attendance counts
-    let updatedPresentCount = student.presentCount || 0;
-    let updatedLateCount = student.lateCount || 0;
-    let updatedAbsentCount = student.absentCount || 0;
-    let updatedPermissionCount = student.permissionCount || 0;
-    let updatedTotalAttendanceDays = student.totalAttendanceDays || 0;
+    let updatedPresentCount = (student.presentCount as number) || 0;
+    let updatedLateCount = (student.lateCount as number) || 0;
+    let updatedAbsentCount = (student.absentCount as number) || 0;
+    let updatedPermissionCount = (student.permissionCount as number) || 0;
+    let updatedTotalAttendanceDays = (student.totalAttendanceDays as number) || 0;
 
     // Increase the count for the new status
     switch (newStatus) {
@@ -236,14 +236,14 @@ export async function PUT(request: Request) {
         totalAttendanceDays: updatedTotalAttendanceDays
       },
       { new: true }
-    );
+    ).lean();
 
     // Get updated stats
     const updatedStats = await calculateAttendanceStats();
     const studentCategories = await calculateStudentCategories();
 
     // Return success response with all necessary data
-    const response = {
+    const response: Record<string, unknown> = {
       success: true,
       message: 'Attendance status updated successfully',
       student: updatedStudent,
