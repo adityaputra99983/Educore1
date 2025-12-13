@@ -73,12 +73,12 @@ export async function GET(request: Request) {
       case 'performance':
         // Calculate performance statistics
         const performanceData = {
-          perfectAttendance: students.filter((s: any) => s.attendance === 100).length,
-          highAttendance: students.filter((s: any) => s.attendance >= 90 && s.attendance < 100).length,
-          mediumAttendance: students.filter((s: any) => s.attendance >= 75 && s.attendance < 90).length,
-          lowAttendance: students.filter((s: any) => s.attendance < 75).length,
-          mostLate: [...students].sort((a: any, b: any) => b.late - a.late).slice(0, 5),
-          mostAbsent: [...students].sort((a: any, b: any) => b.absent - a.absent).slice(0, 5)
+          perfectAttendance: students.filter((s: IStudent) => s.attendance === 100).length,
+          highAttendance: students.filter((s: IStudent) => s.attendance >= 90 && s.attendance < 100).length,
+          mediumAttendance: students.filter((s: IStudent) => s.attendance >= 75 && s.attendance < 90).length,
+          lowAttendance: students.filter((s: IStudent) => s.attendance < 75).length,
+          mostLate: [...students].sort((a: IStudent, b: IStudent) => b.late - a.late).slice(0, 5),
+          mostAbsent: [...students].sort((a: IStudent, b: IStudent) => b.absent - a.absent).slice(0, 5)
         };
 
         return NextResponse.json({
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: true,
           reportType: 'detailed',
-          students: students.map((student: any) => ({
+          students: students.map((student: IStudent) => ({
             id: student.id,
             nis: student.nis,
             name: student.name,
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
       case 'class':
         // Enhanced class report with detailed statistics
         const classReports: Record<string, any> = {};
-        students.forEach((student: any) => {
+        students.forEach((student: IStudent) => {
           if (!classReports[student.class]) {
             classReports[student.class] = {
               class: student.class,
@@ -177,9 +177,9 @@ export async function GET(request: Request) {
 
         // Calculate average attendance rates for each class
         Object.values(classReports).forEach((classData: any) => {
-          const total = classData.totalStudents;
+          const total = (classData as { totalStudents: number }).totalStudents;
           classData.averageAttendance = total > 0
-            ? Math.round((classData.attendanceSum / total) * 10) / 10
+            ? Math.round(((classData as { attendanceSum: number }).attendanceSum / total) * 10) / 10
             : 0;
         });
 
@@ -193,14 +193,14 @@ export async function GET(request: Request) {
       case 'promotion':
         // Enhanced promotion report with detailed statistics
         const promotionStats = {
-          promoted: students.filter((s: any) => s.promotionStatus === 'naik').length,
-          retained: students.filter((s: any) => s.promotionStatus === 'tinggal').length,
-          graduated: students.filter((s: any) => s.promotionStatus === 'lulus').length,
-          undecided: students.filter((s: any) => !s.promotionStatus || s.promotionStatus === 'belum-ditetapkan').length
+          promoted: students.filter((s: IStudent) => s.promotionStatus === 'naik').length,
+          retained: students.filter((s: IStudent) => s.promotionStatus === 'tinggal').length,
+          graduated: students.filter((s: IStudent) => s.promotionStatus === 'lulus').length,
+          undecided: students.filter((s: IStudent) => !s.promotionStatus || s.promotionStatus === 'belum-ditetapkan').length
         };
 
         // Detailed student stats for promotion
-        const detailedStats = students.map((student: any) => ({
+        const detailedStats = students.map((student: IStudent) => ({
           id: student.id,
           nis: student.nis,
           name: student.name,
@@ -230,7 +230,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: true,
           reportType: 'attendance',
-          students: students.map((student: any) => ({
+          students: students.map((student: IStudent) => ({
             id: student.id,
             nis: student.nis,
             name: student.name,
@@ -295,39 +295,74 @@ export async function POST(request: Request) {
     // Generate the appropriate export format
     if (format === 'pdf') {
       try {
-        // For server-side PDF generation, we need to use a different approach
-        // Return success message to indicate that client-side generation should be used
-        return NextResponse.json({
-          success: true,
-          message: 'PDF report ready for generation',
-          format: 'pdf',
-          reportType,
-          data // Include the data for client-side generation
+        // Dynamically import pdfmake to avoid SSR issues
+        const pdfMakeModule = await import('pdfmake/build/pdfmake');
+        const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+        
+        const pdfMake = pdfMakeModule.default;
+        pdfMake.vfs = pdfFontsModule.default.pdfMake.vfs;
+        
+        // Import the PDF generator function
+        const { generatePDFReport } = await import('../../../utils/pdfGenerator');
+        
+        // Generate the PDF
+        const blob = await generatePDFReport(data, reportType);
+        
+        // Convert blob to buffer
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        // Set headers for PDF download - force download without print dialog
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/pdf');
+        headers.append('Content-Disposition', `attachment; filename=laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.pdf`);
+        headers.append('Cache-Control', 'no-cache, no-store, must-revalidate');
+        headers.append('Pragma', 'no-cache');
+        headers.append('Expires', '0');
+        
+        // Return the PDF as a response
+        return new NextResponse(buffer, { 
+          status: 200, 
+          headers 
         });
       } catch (pdfError) {
-        console.error('Error preparing PDF generation:', pdfError);
+        console.error('Error generating PDF:', pdfError);
         return NextResponse.json({
           success: false,
-          error: 'Failed to prepare PDF report',
+          error: 'Failed to generate PDF report',
           message: pdfError instanceof Error ? pdfError.message : 'Unknown error'
         }, { status: 500 });
       }
     } else if (format === 'excel') {
       try {
-        // For server-side Excel generation, we need to use a different approach
-        // Return success message to indicate that client-side generation should be used
-        return NextResponse.json({
-          success: true,
-          message: 'Excel report ready for generation',
-          format: 'excel',
-          reportType,
-          data // Include the data for client-side generation
+        // Import the Excel generator function
+        const { generateExcelReport } = await import('../../../utils/excelGenerator');
+        
+        // Generate the Excel file
+        const blob = await generateExcelReport(data, reportType);
+        
+        // Convert blob to buffer
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        // Set headers for Excel download - force download without print dialog
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        headers.append('Content-Disposition', `attachment; filename=laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.xlsx`);
+        headers.append('Cache-Control', 'no-cache, no-store, must-revalidate');
+        headers.append('Pragma', 'no-cache');
+        headers.append('Expires', '0');
+        
+        // Return the Excel file as a response
+        return new NextResponse(buffer, { 
+          status: 200, 
+          headers 
         });
       } catch (excelError) {
-        console.error('Error preparing Excel generation:', excelError);
+        console.error('Error generating Excel:', excelError);
         return NextResponse.json({
           success: false,
-          error: 'Failed to prepare Excel report',
+          error: 'Failed to generate Excel report',
           message: excelError instanceof Error ? excelError.message : 'Unknown error'
         }, { status: 500 });
       }
