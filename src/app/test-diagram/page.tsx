@@ -14,8 +14,8 @@ const TestDiagramPage = () => {
 
   // Mock data for testing
   useEffect(() => {
-    // Mock summary report data
-    const mockSummaryData = {
+    // Create mock data functions
+    const createMockSummaryData = () => ({
       reportType: 'summary',
       attendanceStats: {
         totalStudents: 100,
@@ -32,10 +32,33 @@ const TestDiagramPage = () => {
         undecided: 5,
         total: 100
       }
-    };
+    });
 
-    // Mock performance report data
-    const mockPerformanceData = {
+    // Set initial report data to summary
+    setReportData(createMockSummaryData());
+  }, []);
+
+  const handleReportTypeChange = (type: string) => {
+    const createMockSummaryData = () => ({
+      reportType: 'summary',
+      attendanceStats: {
+        totalStudents: 100,
+        present: 85,
+        late: 8,
+        absent: 5,
+        permission: 2,
+        attendanceRate: 92.5
+      },
+      promotionStats: {
+        promoted: 75,
+        retained: 5,
+        graduated: 15,
+        undecided: 5,
+        total: 100
+      }
+    });
+    
+    const createMockPerformanceData = () => ({
       reportType: 'performance',
       attendanceStats: {
         totalStudents: 100,
@@ -61,64 +84,12 @@ const TestDiagramPage = () => {
           { nis: '12350', name: 'Fajar Pratama', class: 'XII-A', absent: 2 }
         ]
       }
-    };
+    });
 
-    // Set initial report data to summary
-    setReportData(mockSummaryData);
-  }, []);
-
-  const handleReportTypeChange = (type: string) => {
     if (type === 'summary') {
-      // Mock summary report data
-      const mockSummaryData = {
-        reportType: 'summary',
-        attendanceStats: {
-          totalStudents: 100,
-          present: 85,
-          late: 8,
-          absent: 5,
-          permission: 2,
-          attendanceRate: 92.5
-        },
-        promotionStats: {
-          promoted: 75,
-          retained: 5,
-          graduated: 15,
-          undecided: 5,
-          total: 100
-        }
-      };
-      setReportData(mockSummaryData);
+      setReportData(createMockSummaryData());
     } else if (type === 'performance') {
-      // Mock performance report data
-      const mockPerformanceData = {
-        reportType: 'performance',
-        attendanceStats: {
-          totalStudents: 100,
-          present: 85,
-          late: 8,
-          absent: 5,
-          permission: 2,
-          attendanceRate: 92.5
-        },
-        performanceData: {
-          perfectAttendance: 25,
-          highAttendance: 50,
-          mediumAttendance: 15,
-          lowAttendance: 10,
-          mostLate: [
-            { nis: '12345', name: 'Ahmad Rifai', class: 'XII-A', late: 5 },
-            { nis: '12346', name: 'Budi Santoso', class: 'XII-B', late: 4 },
-            { nis: '12347', name: 'Citra Dewi', class: 'XII-A', late: 3 }
-          ],
-          mostAbsent: [
-            { nis: '12348', name: 'Dedi Kurniawan', class: 'XII-C', absent: 4 },
-            { nis: '12349', name: 'Eka Putri', class: 'XII-B', absent: 3 },
-            { nis: '12350', name: 'Fajar Pratama', class: 'XII-A', absent: 2 }
-          ]
-        }
-      };
-      setReportData(mockPerformanceData);
+      setReportData(createMockPerformanceData());
     }
   };
 
