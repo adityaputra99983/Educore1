@@ -454,16 +454,16 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
   };
 
   return (
-    <div className={`min-h-screen ${settings.theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Notification */}
+    <div className={`min-h-screen ${settings.theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} no-print`}>
+      {/* Notification - Add no-print class */}
       {showNotification && (
-        <div className={`fixed top-4 right-4 px-6 py-3 rounded-xl shadow-lg z-50 animate-fade-in ${notificationType === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
+        <div className={`fixed top-4 right-4 px-6 py-3 rounded-xl shadow-lg z-50 animate-fade-in no-print ${notificationType === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
           {notificationMessage}
         </div>
       )}
 
-      {/* Header */}
-      <header className={`${settings.theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow`}>
+      {/* Header - Add no-print class */}
+      <header className={`${settings.theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow no-print`}>
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -493,8 +493,8 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Student Info Card */}
-        <div className={`${settings.theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white'} rounded-xl shadow-md overflow-hidden mb-8 border`}>
+        {/* Student Info Card - Add report-container for print styling */}
+        <div className={`${settings.theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white'} rounded-xl shadow-md overflow-hidden mb-8 border report-container`}>
           <div className="p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center">
               <div className="flex items-center mb-4 md:mb-0 md:mr-6">
@@ -896,8 +896,8 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards - Add report-section for print styling */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 report-section">
           <div className={`${settings.theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl shadow-md p-6 border`}>
             <div className="flex items-center">
               <div className={`rounded-full ${settings.theme === 'dark' ? 'bg-emerald-900/30' : 'bg-emerald-100'} p-3`}>
@@ -947,8 +947,8 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
           </div>
         </div>
 
-        {/* Violations and Achievements Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Violations and Achievements Section - Add report-section for print styling */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 report-section">
           {/* Violations */}
           <div className={`${settings.theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl shadow-md overflow-hidden border`}>
             <div className={`${settings.theme === 'dark' ? 'bg-red-900/20 border-b border-red-800' : 'bg-red-50'} px-6 py-4`}>
