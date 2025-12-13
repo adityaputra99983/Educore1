@@ -178,43 +178,34 @@ export async function exportReport(format: string, reportType: string, data: any
       throw new Error('Report data is required');
     }
     
-    // For PDF format, use the generatePDFReport function
-    if (format === 'pdf') {
-      const { generatePDFReport } = await import('./pdfGenerator');
-      try {
-        const blob = await generatePDFReport(data, reportType);
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        return { success: true, message: 'PDF report exported successfully!' };
-      } catch (pdfError: any) {
-        console.error('Error generating PDF:', pdfError);
-        return { success: false, error: pdfError.message || 'Unknown error', message: 'Error generating PDF: ' + (pdfError.message || 'Unknown error') };
-      }
-    } else {
-      // For Excel export, use the generateExcelReport function
-      const { generateExcelReport } = await import('./excelGenerator');
-      try {
-        const blob = await generateExcelReport(data, reportType);
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        return { success: true, message: 'Excel report exported successfully!' };
-      } catch (excelError: any) {
-        console.error('Error generating Excel:', excelError);
-        return { success: false, error: excelError.message || 'Unknown error', message: 'Error generating Excel: ' + (excelError.message || 'Unknown error') };
-      }
+    // Send request to server to generate the report
+    const response = await fetch('/api/reports', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ format, reportType, data }),
+    });
+    
+    // Check if response is successful
+    if (!response.ok) {
+      throw new Error(`Failed to export report: ${response.statusText}`);
     }
+    
+    // Get the blob from the response
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    return { success: true, message: `${format.toUpperCase()} report exported successfully!` };
   } catch (error) {
     console.error('Export report error:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error', message: 'Failed to export report' };
