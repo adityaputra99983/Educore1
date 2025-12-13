@@ -104,7 +104,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     await dbConnect();
-    const body = await request.json() as Record<string, unknown>;
+    const body = await request.json();
     const { studentId, newStatus } = body as { studentId: string; newStatus: string };
 
     // Validate input
@@ -116,7 +116,7 @@ export async function PUT(request: Request) {
     }
 
     // Validate student ID
-    const id = parseInt(studentId as string, 10);
+    const id = parseInt(studentId, 10);
     if (isNaN(id) || id <= 0) {
       return NextResponse.json({
         success: false,
@@ -252,7 +252,7 @@ export async function PUT(request: Request) {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error updating attendance:', error);
     return NextResponse.json({
       success: false,
