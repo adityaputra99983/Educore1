@@ -104,7 +104,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     await dbConnect();
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
     const { studentId, newStatus } = body as { studentId: string; newStatus: string };
 
     // Validate input
