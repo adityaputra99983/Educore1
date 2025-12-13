@@ -13,7 +13,7 @@ export async function GET() {
     const teachers = await Teacher.find({});
 
     return NextResponse.json({ teachers });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/teachers:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -37,14 +37,14 @@ export async function POST(request: Request) {
       id: newId,
       name: body.name,
       subject: body.subject,
-      photo: body.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+      photo: (body.name as string).split(' ').map((n: string) => n[0]).join('').toUpperCase(),
       schedule: body.schedule || []
     };
 
     const newTeacher = await Teacher.create(newTeacherData);
 
     return NextResponse.json({ success: true, teacher: newTeacher }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in POST /api/teachers:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

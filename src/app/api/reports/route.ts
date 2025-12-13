@@ -2,6 +2,26 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
 import Student, { type IStudent } from '../../../models/Student';
 
+// Define interfaces for our data structures
+interface ClassReport {
+  class: string;
+  totalStudents: number;
+  present: number;
+  late: number;
+  absent: number;
+  permission: number;
+  averageAttendance: number;
+  promoted: number;
+  retained: number;
+  graduated: number;
+  attendanceSum: number;
+  totalPresent: number;
+  totalLate: number;
+  totalAbsent: number;
+  totalPermission: number;
+  totalAttendanceDays: number;
+}
+
 // Helper function to calculate stats
 async function calculateAttendanceStats() {
   const totalStudents = await Student.countDocuments();
@@ -114,7 +134,7 @@ export async function GET(request: Request) {
 
       case 'class':
         // Enhanced class report with detailed statistics
-        const classReports: Record<string, any> = {};
+        const classReports: Record<string, ClassReport> = {};
         students.forEach((student: IStudent) => {
           if (!classReports[student.class]) {
             classReports[student.class] = {
@@ -176,10 +196,10 @@ export async function GET(request: Request) {
         });
 
         // Calculate average attendance rates for each class
-        Object.values(classReports).forEach((classData: any) => {
-          const total = (classData as { totalStudents: number }).totalStudents;
+        Object.values(classReports).forEach((classData: ClassReport) => {
+          const total = classData.totalStudents;
           classData.averageAttendance = total > 0
-            ? Math.round(((classData as { attendanceSum: number }).attendanceSum / total) * 10) / 10
+            ? Math.round((classData.attendanceSum / total) * 10) / 10
             : 0;
         });
 
@@ -325,7 +345,7 @@ export async function POST(request: Request) {
           status: 200, 
           headers 
         });
-      } catch (pdfError) {
+      } catch (pdfError: unknown) {
         console.error('Error generating PDF:', pdfError);
         return NextResponse.json({
           success: false,
@@ -358,7 +378,7 @@ export async function POST(request: Request) {
           status: 200, 
           headers 
         });
-      } catch (excelError) {
+      } catch (excelError: unknown) {
         console.error('Error generating Excel:', excelError);
         return NextResponse.json({
           success: false,
@@ -372,7 +392,7 @@ export async function POST(request: Request) {
       success: false,
       error: 'Unsupported format'
     }, { status: 400 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in POST /api/reports:', error);
     return NextResponse.json({
       success: false,

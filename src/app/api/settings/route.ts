@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     return NextResponse.json(settings);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/settings:', error);
     return NextResponse.json({
       error: 'Internal server error',
@@ -38,7 +38,7 @@ export async function PUT(request: Request) {
       message: 'Settings updated successfully',
       settings
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in PUT /api/settings:', error);
     return NextResponse.json({
       error: 'Internal server error',

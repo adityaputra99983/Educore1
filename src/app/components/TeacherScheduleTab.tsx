@@ -5,7 +5,11 @@ import { Users, Calendar, Search, UserPlus, X, Settings, Trash2 } from 'lucide-r
 import { getTeachers, getTeacherSchedule, addTeacher, updateTeacherSchedule, removeTeacher } from '@/utils/api';
 import type { Teacher, ScheduleItem } from '@/types/teacher';
 
-const TeacherScheduleTab = ({ settings, setShowNotification }: { settings: any; setShowNotification: (show: boolean) => void }) => {
+interface Settings {
+  theme: 'light' | 'dark';
+}
+
+const TeacherScheduleTab = ({ settings, setShowNotification }: { settings: Settings; setShowNotification: (show: boolean) => void }) => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -20,7 +24,7 @@ const TeacherScheduleTab = ({ settings, setShowNotification }: { settings: any; 
 
   // Fetch teachers on component mount
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         const response = await getTeachers();
@@ -32,7 +36,7 @@ const TeacherScheduleTab = ({ settings, setShowNotification }: { settings: any; 
       }
     };
 
-    fetchTeachers();
+    fetchData();
   }, []);
 
   // Filter teachers based on search query
@@ -63,7 +67,10 @@ const TeacherScheduleTab = ({ settings, setShowNotification }: { settings: any; 
     const grouped: Record<string, ScheduleItem[]> = {};
     const daysOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
     
-    schedule.forEach(item => {
+    // Create a copy of the schedule to avoid mutation
+    const scheduleCopy = [...schedule];
+    
+    scheduleCopy.forEach(item => {
       if (!grouped[item.day]) {
         grouped[item.day] = [];
       }
@@ -190,14 +197,12 @@ const TeacherScheduleTab = ({ settings, setShowNotification }: { settings: any; 
       room: 'Ruang 101',
       description: ''
     };
-    setEditingSchedule([...editingSchedule, newItem]);
+    setEditingSchedule(prev => [...prev, newItem]);
   };
 
   // Remove schedule item
   const removeScheduleItem = (index: number) => {
-    const updatedSchedule = [...editingSchedule];
-    updatedSchedule.splice(index, 1);
-    setEditingSchedule(updatedSchedule);
+    setEditingSchedule(prev => prev.filter((_, i) => i !== index));
   };
 
   // Handle save schedule

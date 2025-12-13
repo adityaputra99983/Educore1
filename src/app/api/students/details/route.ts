@@ -57,7 +57,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({ students: studentsWithDetails });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/students/details:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

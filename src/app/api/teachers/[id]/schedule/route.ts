@@ -30,7 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       success: true,
       schedule: teacher.schedule || []
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/teachers/[id]/schedule:', error);
     return NextResponse.json({
       success: false,

@@ -19,7 +19,7 @@ export async function GET() {
         teachers: '/api/teachers'
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Integration test failed:', error);
     return NextResponse.json({
       success: false,

@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
     } else {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in PUT /api/students/class:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

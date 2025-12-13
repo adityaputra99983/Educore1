@@ -2,10 +2,18 @@
 
 import React from 'react';
 import TeacherScheduleTab from '../components/TeacherScheduleTab';
+import type { Settings } from '@/contexts/SettingsContext';
 
 const TestTeacherScheduleUpdate = () => {
   // Mock settings and setShowNotification for testing
-  const mockSettings = {
+  const mockSettings: Settings = {
+    school_name: 'Test School',
+    academic_year: '2025/2026',
+    semester: 'Ganjil',
+    start_time: '07:00',
+    end_time: '15:00',
+    notifications: true,
+    language: 'id',
     theme: 'light'
   };
   

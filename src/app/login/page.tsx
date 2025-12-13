@@ -4,35 +4,40 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { School, User, Lock, Eye, EyeOff, ArrowRight, Sparkles, Shield, Zap, Globe } from 'lucide-react';
 
+interface BackgroundElement {
+  id: number;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  xMovement: number;
+  scale: number;
+  duration: number;
+}
+
 const ModernLoginDashboard = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [backgroundElements, setBackgroundElements] = useState<Array<{
-    id: number;
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-    xMovement: number;
-    scale: number;
-    duration: number;
-  }>>([]);
+  const [backgroundElements, setBackgroundElements] = useState<BackgroundElement[]>([]);
 
   // Generate background elements with random properties once on mount
   useEffect(() => {
-    const elements = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      width: Math.random() * 100 + 20,
-      height: Math.random() * 100 + 20,
-      xMovement: Math.random() * 50 - 25,
-      scale: Math.random() * 0.5 + 0.8,
-      duration: Math.random() * 10 + 10,
-    }));
-    setBackgroundElements(elements);
+    const generateElements = () => {
+      return Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        top: Math.random() * 100,
+        left: Math.random() * 100,
+        width: Math.random() * 100 + 20,
+        height: Math.random() * 100 + 20,
+        xMovement: Math.random() * 50 - 25,
+        scale: Math.random() * 0.5 + 0.8,
+        duration: Math.random() * 10 + 10,
+      }));
+    };
+    
+    setBackgroundElements(generateElements());
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {

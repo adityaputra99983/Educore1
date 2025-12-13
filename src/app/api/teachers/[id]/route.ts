@@ -7,10 +7,10 @@ import Teacher from '../../../../models/Teacher';
  * 
  * Retrieve a specific teacher by ID.
  */
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     await dbConnect();
-    const resolvedParams = await params;
+    const resolvedParams = params instanceof Promise ? await params : params;
 
     if (!resolvedParams || !resolvedParams.id) {
       return NextResponse.json({ success: false, error: 'Missing teacher ID' }, { status: 400 });
@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     return NextResponse.json({ success: true, teacher }, { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/teachers/[id]:', error);
     return NextResponse.json({
       success: false,
@@ -43,10 +43,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
  * 
  * Remove a teacher from the system.
  */
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     await dbConnect();
-    const resolvedParams = await params;
+    const resolvedParams = params instanceof Promise ? await params : params;
 
     if (!resolvedParams || !resolvedParams.id) {
       return NextResponse.json({ success: false, error: 'Missing teacher ID' }, { status: 400 });
@@ -67,7 +67,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       success: true,
       message: `Teacher with ID ${teacherId} successfully removed`
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in DELETE /api/teachers/[id]:', error);
     return NextResponse.json({
       success: false,

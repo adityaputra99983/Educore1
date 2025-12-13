@@ -83,7 +83,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     };
 
     return NextResponse.json({ student: studentWithDetails });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/students/[id]:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -117,7 +117,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       success: true,
       message: 'Student successfully removed'
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in DELETE /api/students/[id]:', error);
     return NextResponse.json({
       success: false,
