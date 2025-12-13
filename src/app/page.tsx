@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Camera, Users, Calendar, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle, Download, Upload, Search, Filter, Bell, UserCheck, BarChart3, PieChart, Settings as SettingsIcon, LogOut, Menu, X, UserPlus, ArrowRightLeft, Save, Shield, Heart } from 'lucide-react';
+import { Camera, Users, Calendar, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle, Download, Upload, Search, Filter, Bell, UserCheck, BarChart3, PieChart, Settings as SettingsIcon, LogOut, Menu, X, UserPlus, ArrowRightLeft, Save, Shield, Heart, Wrench } from 'lucide-react';
 import { getStudents, updateAttendance, getSettings, getReports, exportReport, addStudent, getTeachers, getTeacherSchedule } from '@/utils/api';
 import { useSettings, type Settings } from '@/contexts/SettingsContext';
 import TeacherScheduleTab from './components/TeacherScheduleTab';
@@ -2375,6 +2375,19 @@ const ModernAttendanceSystem = () => {
               >
                 <UserPlus className="w-5 h-5" />
                 {isSidebarOpen && <span>Siswa Baru/Pindahan</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => router.push('/test-integration')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
+                  settings.theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+              >
+                <Wrench className="w-5 h-5" />
+                {isSidebarOpen && <span>Integration Test</span>}
               </button>
             </li>
           </ul>
