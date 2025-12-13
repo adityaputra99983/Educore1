@@ -5,12 +5,46 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { Activity, TrendingUp } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
+// Define types for our report data
+interface AttendanceStats {
+  totalStudents: number;
+  present: number;
+  late: number;
+  absent: number;
+  permission: number;
+  attendanceRate: number;
+}
+
+interface PromotionStats {
+  promoted: number;
+  retained: number;
+  graduated: number;
+  undecided: number;
+  total: number;
+}
+
+interface PerformanceData {
+  perfectAttendance: number;
+  highAttendance: number;
+  mediumAttendance: number;
+  lowAttendance: number;
+  mostLate: Array<{ nis: string; name: string; class: string; late: number }>;
+  mostAbsent: Array<{ nis: string; name: string; class: string; absent: number }>;
+}
+
+interface ReportData {
+  reportType: string;
+  attendanceStats: AttendanceStats;
+  promotionStats?: PromotionStats;
+  performanceData?: PerformanceData;
+}
+
 // Dynamically import the diagram component to avoid SSR issues
 const AttendanceStatusDiagram = dynamic(() => import('../reports/components/AttendanceStatusDiagram'), { ssr: false });
 
 const TestDiagramPage = () => {
   const { settings } = useSettings();
-  const [reportData, setReportData] = useState<any>(null);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
 
   // Mock data for testing
   useEffect(() => {
