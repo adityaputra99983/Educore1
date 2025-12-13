@@ -30,7 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       success: true,
       schedule: teacher.schedule || []
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/teachers/[id]/schedule:', error);
     return NextResponse.json({
       success: false,
@@ -67,7 +67,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Ensure each schedule item has a unique ID
-    const scheduleWithIds = scheduleData.map((item: any, index: number) => ({
+    const scheduleWithIds = scheduleData.map((item: { id?: number }, index: number) => ({
       ...item,
       id: item.id || Date.now() + index
     }));
@@ -86,12 +86,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       success: true,
       teacher: updatedTeacher
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in PUT /api/teachers/[id]/schedule:', error);
     return NextResponse.json({
       success: false,
       error: 'Internal Server Error',
-      message: 'Internal server error: ' + (error.message || 'Unknown error')
+      message: 'Internal server error: ' + (error instanceof Error ? error.message : 'Unknown error')
     }, { status: 500 });
   }
 }
