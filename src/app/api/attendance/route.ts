@@ -67,7 +67,10 @@ export async function GET(request: Request) {
     }
 
     // Build the query object for filtering students
-    const query: Record<string, unknown> = {};
+    const query: { 
+      class?: string;
+      $or?: Array<{ name: { $regex: string; $options: string } } | { nis: { $regex: string; $options: string } }>;
+    } = {};
 
     if (classFilter && classFilter !== 'all') {
       query.class = classFilter;
@@ -125,7 +128,7 @@ export async function PUT(request: Request) {
     }
 
     // Validate status values
-    const validStatuses = ['hadir', 'terlambat', 'tidak-hadir', 'izin', 'sakit'];
+    const validStatuses: string[] = ['hadir', 'terlambat', 'tidak-hadir', 'izin', 'sakit'];
     if (!validStatuses.includes(newStatus)) {
       return NextResponse.json({
         success: false,
