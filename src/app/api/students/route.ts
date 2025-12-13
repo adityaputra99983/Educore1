@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     console.log('Found students:', students.length);
 
     return NextResponse.json({ students });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/students:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -70,11 +70,11 @@ export async function POST(request: Request) {
     console.log('Raw request body:', bodyText);
     
     // Parse the body
-    let body;
+    let body: Record<string, unknown>;
     try {
       body = JSON.parse(bodyText);
       console.log('Parsed body:', body);
-    } catch (parseError) {
+    } catch (parseError: unknown) {
       console.error('Error parsing request body:', parseError);
       return NextResponse.json({
         success: false,
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     // Validate student type if provided
     const validTypes = ['existing', 'new', 'transfer'];
-    if (body.type && !validTypes.includes(body.type)) {
+    if (body.type && typeof body.type === 'string' && !validTypes.includes(body.type)) {
       console.log('Validation failed: invalid student type');
       return NextResponse.json({
         success: false,
@@ -110,17 +110,17 @@ export async function POST(request: Request) {
     // Create new student object
     const newStudentData = {
       id: newId,
-      nis: body.nis,
-      name: body.name,
-      class: body.class,
+      nis: body.nis as string,
+      name: body.name as string,
+      class: body.class as string,
       status: 'belum-diisi',
       time: '-',
-      photo: body.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+      photo: (body.name as string).split(' ').map((n: string) => n[0]).join('').toUpperCase(),
       attendance: 0,
       late: 0,
       absent: 0,
       permission: 0,
-      type: body.type || 'new'
+      type: (body.type as string) || 'new'
     };
     
     console.log('Creating student with data:', newStudentData);
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     console.log('Student created successfully:', newStudent);
 
     return NextResponse.json({ success: true, student: newStudent }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in POST /api/students:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
