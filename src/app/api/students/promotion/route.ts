@@ -84,7 +84,7 @@ export async function PUT(request: Request) {
         error: 'Student not found'
       }, { status: 404 });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in PUT /api/students/promotion:', error);
     return NextResponse.json({
       success: false,
