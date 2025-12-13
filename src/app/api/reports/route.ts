@@ -295,39 +295,74 @@ export async function POST(request: Request) {
     // Generate the appropriate export format
     if (format === 'pdf') {
       try {
-        // For server-side PDF generation, we need to use a different approach
-        // Return success message to indicate that client-side generation should be used
-        return NextResponse.json({
-          success: true,
-          message: 'PDF report ready for generation',
-          format: 'pdf',
-          reportType,
-          data // Include the data for client-side generation
+        // Dynamically import pdfmake to avoid SSR issues
+        const pdfMakeModule = await import('pdfmake/build/pdfmake');
+        const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+        
+        const pdfMake = pdfMakeModule.default;
+        pdfMake.vfs = pdfFontsModule.default.pdfMake.vfs;
+        
+        // Import the PDF generator function
+        const { generatePDFReport } = await import('../../../utils/pdfGenerator');
+        
+        // Generate the PDF
+        const blob = await generatePDFReport(data, reportType);
+        
+        // Convert blob to buffer
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        // Set headers for PDF download - force download without print dialog
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/pdf');
+        headers.append('Content-Disposition', `attachment; filename=laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.pdf`);
+        headers.append('Cache-Control', 'no-cache, no-store, must-revalidate');
+        headers.append('Pragma', 'no-cache');
+        headers.append('Expires', '0');
+        
+        // Return the PDF as a response
+        return new NextResponse(buffer, { 
+          status: 200, 
+          headers 
         });
       } catch (pdfError) {
-        console.error('Error preparing PDF generation:', pdfError);
+        console.error('Error generating PDF:', pdfError);
         return NextResponse.json({
           success: false,
-          error: 'Failed to prepare PDF report',
+          error: 'Failed to generate PDF report',
           message: pdfError instanceof Error ? pdfError.message : 'Unknown error'
         }, { status: 500 });
       }
     } else if (format === 'excel') {
       try {
-        // For server-side Excel generation, we need to use a different approach
-        // Return success message to indicate that client-side generation should be used
-        return NextResponse.json({
-          success: true,
-          message: 'Excel report ready for generation',
-          format: 'excel',
-          reportType,
-          data // Include the data for client-side generation
+        // Import the Excel generator function
+        const { generateExcelReport } = await import('../../../utils/excelGenerator');
+        
+        // Generate the Excel file
+        const blob = await generateExcelReport(data, reportType);
+        
+        // Convert blob to buffer
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        // Set headers for Excel download - force download without print dialog
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        headers.append('Content-Disposition', `attachment; filename=laporan-kehadiran-${reportType}-${new Date().toISOString().split('T')[0]}.xlsx`);
+        headers.append('Cache-Control', 'no-cache, no-store, must-revalidate');
+        headers.append('Pragma', 'no-cache');
+        headers.append('Expires', '0');
+        
+        // Return the Excel file as a response
+        return new NextResponse(buffer, { 
+          status: 200, 
+          headers 
         });
       } catch (excelError) {
-        console.error('Error preparing Excel generation:', excelError);
+        console.error('Error generating Excel:', excelError);
         return NextResponse.json({
           success: false,
-          error: 'Failed to prepare Excel report',
+          error: 'Failed to generate Excel report',
           message: excelError instanceof Error ? excelError.message : 'Unknown error'
         }, { status: 500 });
       }

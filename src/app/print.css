@@ -1,0 +1,113 @@
+/* Print Styles - Only show report content when printing */
+@media print {
+  /* Hide all UI elements */
+  .no-print,
+  nav,
+  header,
+  aside,
+  footer,
+  .sidebar,
+  .navbar,
+  .button,
+  button,
+  .btn,
+  .actions,
+  .filter-section,
+  .export-buttons,
+  .notification,
+  .breadcrumb,
+  .pagination,
+  .search-bar,
+  .menu,
+  .dropdown,
+  .modal,
+  .tooltip,
+  .chart-container,
+  .diagram-container {
+    display: none !important;
+  }
+
+  /* Show only the report container */
+  .report-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Ensure report content takes full width */
+  .report-container * {
+    visibility: visible !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border-color: #000 !important;
+  }
+
+  /* Specific report elements */
+  .report-header,
+  .report-content,
+  .report-table,
+  .report-card,
+  .report-section {
+    display: block !important;
+    break-inside: avoid !important;
+  }
+
+  /* Table styles for printing */
+  .report-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 12px !important;
+  }
+
+  .report-table th,
+  .report-table td {
+    border: 1px solid #000 !important;
+    padding: 8px !important;
+    text-align: left !important;
+  }
+
+  .report-table th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold !important;
+  }
+
+  /* Card styles for printing */
+  .report-card {
+    border: 1px solid #000 !important;
+    margin-bottom: 15px !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Remove animations and transitions */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 0.5cm !important;
+  }
+
+  /* Body styles for printing */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+}
