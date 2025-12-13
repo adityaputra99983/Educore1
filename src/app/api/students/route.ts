@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
-import Student, { type IStudent } from '../../../models/Student';
+import Student from '../../../models/Student';
 
 // GET /api/students - Get all students with optional filtering
 export async function GET(request: Request) {

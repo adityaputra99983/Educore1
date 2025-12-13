@@ -53,7 +53,7 @@ export async function GET() {
       stats,
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Health Check] Database connection failed:', error);
     
     return NextResponse.json({
@@ -61,8 +61,8 @@ export async function GET() {
       message: 'Database connection failed',
       error: {
         message: error instanceof Error ? error.message : 'Unknown error',
-        name: error?.name || 'Error',
-        code: error?.code || 'UNKNOWN',
+        name: error instanceof Error ? error.name : 'Error',
+        code: (error as any)?.code || 'UNKNOWN',
         ...(error instanceof Error && { stack: error.stack })
       },
       timestamp: new Date().toISOString(),

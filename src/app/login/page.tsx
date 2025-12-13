@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { School, User, Lock, Eye, EyeOff, ArrowRight, Sparkles, Shield, Zap, Globe } from 'lucide-react';
 
@@ -9,6 +9,31 @@ const ModernLoginDashboard = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [backgroundElements, setBackgroundElements] = useState<Array<{
+    id: number;
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+    xMovement: number;
+    scale: number;
+    duration: number;
+  }>>([]);
+
+  // Generate background elements with random properties once on mount
+  useEffect(() => {
+    const elements = Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      width: Math.random() * 100 + 20,
+      height: Math.random() * 100 + 20,
+      xMovement: Math.random() * 50 - 25,
+      scale: Math.random() * 0.5 + 0.8,
+      duration: Math.random() * 10 + 10,
+    }));
+    setBackgroundElements(elements);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,23 +50,23 @@ const ModernLoginDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center p-4">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {backgroundElements.map((element) => (
           <motion.div
-            key={i}
+            key={element.id}
             className="absolute rounded-full bg-white/10"
             style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              width: `${Math.random() * 100 + 20}px`,
-              height: `${Math.random() * 100 + 20}px`,
+              top: `${element.top}%`,
+              left: `${element.left}%`,
+              width: `${element.width}px`,
+              height: `${element.height}px`,
             }}
             animate={{
               y: [0, -30, 0],
-              x: [0, Math.random() * 50 - 25, 0],
-              scale: [1, Math.random() * 0.5 + 0.8, 1],
+              x: [0, element.xMovement, 0],
+              scale: [1, element.scale, 1],
             }}
             transition={{
-              duration: Math.random() * 10 + 10,
+              duration: element.duration,
               repeat: Infinity,
               ease: "easeInOut",
             }}
@@ -202,7 +227,7 @@ const ModernLoginDashboard = () => {
               <motion.button
                 type="submit"
                 className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold shadow-xl flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isLoading}
               >
