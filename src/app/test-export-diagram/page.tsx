@@ -5,6 +5,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { Download, BarChart3 } from 'lucide-react';
 import { generatePDFReport } from '@/utils/pdfGenerator';
 import { generateExcelReport } from '@/utils/excelGenerator';
+import type { FullReportData } from '@/types/report';
 
 const TestExportDiagramPage = () => {
   const { settings } = useSettings();
@@ -12,7 +13,7 @@ const TestExportDiagramPage = () => {
   const [notification, setNotification] = useState<{ show: boolean; message: string; type: string }>({ show: false, message: '', type: '' });
 
   // Mock data for testing
-  const mockSummaryData = {
+  const mockSummaryData: FullReportData = {
     reportType: 'summary',
     attendanceStats: {
       totalStudents: 100,
@@ -28,10 +29,11 @@ const TestExportDiagramPage = () => {
       graduated: 15,
       undecided: 5,
       total: 100
-    }
+    },
+    performanceData: undefined
   };
 
-  const mockPerformanceData = {
+  const mockPerformanceData: FullReportData = {
     reportType: 'performance',
     attendanceStats: {
       totalStudents: 100,
@@ -45,8 +47,7 @@ const TestExportDiagramPage = () => {
       perfectAttendance: 25,
       highAttendance: 50,
       mediumAttendance: 15,
-      lowAttendance: 10,
-      mostLate: []
+      lowAttendance: 10
       // Removed unused data as it's no longer needed
     }
   };

@@ -3,6 +3,8 @@ const path = require('path');
 
 // Mock data for testing
 const mockReportData = {
+  reportType: 'summary',
+  performanceData: undefined,
   attendanceStats: {
     totalStudents: 150,
     present: 120,

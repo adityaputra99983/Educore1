@@ -5,7 +5,7 @@ export interface ScheduleItem {
   endTime: string;
   class: string;
   room: string;
-  description?: string; // Optional description field for what is being taught
+  description: string; // Required description field for what is being taught
 }
 
 export interface Teacher {

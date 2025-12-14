@@ -75,14 +75,14 @@ const StudentListPage = () => {
         setLoading(true);
         const response = await getStudents();
         // Add tracking information if not present
-        const studentsWithTracking = response.students.map((student: any) => ({
+        const studentsWithTracking = response.students.map((student: Student) => ({
           ...student,
           createdAt: student.createdAt || new Date().toISOString(),
           updatedAt: student.updatedAt || new Date().toISOString()
         }));
         setStudents(studentsWithTracking);
         setFilteredStudents(studentsWithTracking);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching students:', error);
       } finally {
         setLoading(false);

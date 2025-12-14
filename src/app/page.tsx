@@ -1540,11 +1540,16 @@ const ModernAttendanceSystem = () => {
   const NewStudentsTab = () => {
     // State for add student modal
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [newStudentData, setNewStudentData] = useState({
+    const [newStudentData, setNewStudentData] = useState<{
+      nis: string;
+      name: string;
+      class: string;
+      type: 'new' | 'transfer';
+    }>({
       nis: '',
       name: '',
       class: 'X-IPA-1',
-      type: 'new' // 'new' or 'transfer'
+      type: 'new'
     });
     const { settings } = useSettings();
     const router = useRouter();

@@ -1,12 +1,14 @@
 'use client';
 
+import type { StudentReportData, ClassReport, PromotionStudentStats, ReportData } from '@/types/report';
+
 /**
  * Generate an Excel report using xlsx with modern styling
  * @param reportData The report data to include in the Excel file
  * @param reportType The type of report (summary, detailed, etc.)
  * @returns Promise<Blob> A promise that resolves to the Excel file blob
  */
-export async function generateExcelReport(reportData: any, reportType: string): Promise<Blob> {
+export async function generateExcelReport(reportData: ReportData, reportType: string): Promise<Blob> {
   try {
     // Dynamically import xlsx to avoid SSR issues
     const xlsxModule = await import('xlsx');
@@ -427,7 +429,7 @@ function addDetailedWorksheet(wb: any, reportData: any, XLSX: any) {
   ];
   
   // Create data rows with calculations to match the UI exactly
-  const dataRows = reportData.students?.map((student: any) => [
+  const dataRows = reportData.students?.map((student: StudentReportData) => [
     student.nis || '',
     student.name || '',
     student.class || '',
@@ -553,7 +555,7 @@ function addClassWorksheet(wb: any, reportData: any, XLSX: any) {
   ];
   
   // Create data rows to match the UI exactly
-  const dataRows = reportData.classReports?.map((classReport: any) => [
+  const dataRows = reportData.classReports?.map((classReport: ClassReport) => [
     classReport.class || '',
     classReport.totalStudents || 0,
     classReport.present || 0,
@@ -794,7 +796,7 @@ function addPromotionWorksheet(wb: any, reportData: any, XLSX: any) {
     ];
     
     // Create data rows to match the UI exactly
-    const dataRows = reportData.detailedStats.map((student: any) => [
+    const dataRows = reportData.detailedStats.map((student: PromotionStudentStats) => [
       student.nis || '',
       student.name || '',
       student.class || '',
@@ -892,7 +894,7 @@ function addGenericWorksheet(wb: any, reportData: any, reportType: string, XLSX:
     genericData.push(['NIS', 'Nama', 'Kelas']); // Simple headers
     
     // Add all students
-    reportData.students.forEach((student: any) => {
+    reportData.students.forEach((student: StudentReportData) => {
       genericData.push([
         student.nis || '',
         student.name || '',
@@ -972,12 +974,12 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
     performanceData.push(['SISWA TERLAMBAT TERBANYAK']);
     performanceData.push(['NIS', 'Nama', 'Kelas', 'Jumlah Terlambat']);
     
-    reportData.performanceData.mostLate.forEach((student: any) => {
+    reportData.performanceData.mostLate.forEach((student: StudentReportData) => {
       performanceData.push([
         student.nis || '',
         student.name || '',
         student.class || '',
-        student.late || 0
+        (student.late || 0).toString()
       ]);
     });
     
@@ -990,12 +992,12 @@ function addPerformanceWorksheet(wb: any, reportData: any, XLSX: any) {
     performanceData.push(['SISWA TIDAK HADIR TERBANYAK']);
     performanceData.push(['NIS', 'Nama', 'Kelas', 'Jumlah Tidak Hadir']);
     
-    reportData.performanceData.mostAbsent.forEach((student: any) => {
+    reportData.performanceData.mostAbsent.forEach((student: StudentReportData) => {
       performanceData.push([
         student.nis || '',
         student.name || '',
         student.class || '',
-        student.absent || 0
+        (student.absent || 0).toString()
       ]);
     });
     

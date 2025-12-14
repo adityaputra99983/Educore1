@@ -91,6 +91,7 @@ export interface ClassReportData {
 }
 
 export interface PromotionStats {
+  total: any;
   promoted: number;
   retained: number;
   graduated: number;
@@ -138,6 +139,8 @@ export interface StudentReportData {
 }
 
 export interface FullReportData {
+  performanceData: { perfectAttendance: number; highAttendance: number; mediumAttendance: number; lowAttendance: number; } | undefined;
+  reportType: string;
   students?: StudentReportData[];
   classReports?: ClassReport[];
   promotionStats?: PromotionStats;

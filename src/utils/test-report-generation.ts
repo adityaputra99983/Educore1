@@ -4,6 +4,13 @@ import { generateExcelReport } from './excelGenerator';
 
 // Sample report data for testing
 const sampleReportData = {
+  reportType: 'summary',
+  performanceData: undefined,
+  reportTitle: 'Laporan Kehadiran dan Kenaikan Kelas',
+  generatedAt: new Date().toISOString(),
+  period: '2024/2025',
+  totalStudents: 13,
+  attendanceRate: 84.6,
   attendanceStats: {
     totalStudents: 13,
     present: 7,

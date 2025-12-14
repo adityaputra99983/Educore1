@@ -513,7 +513,7 @@ export class DataManager {
           const parsedData = JSON.parse(savedData);
           console.log('Parsed data from localStorage:', parsedData);
           const result = {
-            students: parsedData.students.map((student: any) => ({
+            students: parsedData.students.map((student: Student) => ({
               ...student,
               id: Number(student.id), // Ensure ID is a number
               violations: student.violations || 0,

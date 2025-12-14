@@ -3,6 +3,7 @@ const { generateExcelReport } = require('./src/utils/excelGenerator');
 // Test data matching the UI
 const testData = {
   reportType: 'summary',
+  performanceData: undefined,
   attendanceStats: {
     totalStudents: 150,
     present: 142,

@@ -1,4 +1,6 @@
 // Utility functions for API operations
+import type { IStudent } from '@/models/Student';
+import type { ITeacher } from '@/models/Teacher';
 
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const baseUrl = '/api';
@@ -117,7 +119,7 @@ export async function updateAttendance(studentId: number, newStatus: string) {
   }
 }
 
-export async function addStudent(studentData: any) {
+export async function addStudent(studentData: Partial<IStudent>) {
   // Validate required fields
   if (!studentData.nis || !studentData.name || !studentData.class) {
     throw new Error('NIS, name, and class are required fields');
@@ -133,7 +135,7 @@ export async function getSettings() {
   return fetchAPI('/settings');
 }
 
-export async function updateSettings(settings: any) {
+export async function updateSettings(settings: Record<string, any>) {
   return fetchAPI('/settings', {
     method: 'PUT',
     body: JSON.stringify(settings),
@@ -163,7 +165,7 @@ export async function getReports(type: string, params: Record<string, string> = 
   return fetchAPI(url);
 }
 
-export async function exportReport(format: string, reportType: string, data: any): Promise<{ success: true; message: string } | { success: false; error: string; message: string }> {
+export async function exportReport(format: string, reportType: string, data: Record<string, any>): Promise<{ success: true; message: string } | { success: false; error: string; message: string }> {
   try {
     // Validate inputs
     if (!format || !['pdf', 'excel'].includes(format)) {
@@ -269,7 +271,7 @@ export async function getTeacherSchedule(teacherId: number) {
   return fetchAPI(`/teachers/${teacherId}/schedule`);
 }
 
-export async function addTeacher(teacherData: any) {
+export async function addTeacher(teacherData: Partial<ITeacher>) {
   // Validate required fields
   if (!teacherData.name || !teacherData.subject) {
     throw new Error('Name and subject are required fields for teachers');
@@ -281,7 +283,7 @@ export async function addTeacher(teacherData: any) {
   });
 }
 
-export async function updateTeacherSchedule(teacherId: number, scheduleData: any) {
+export async function updateTeacherSchedule(teacherId: number, scheduleData: ITeacher['schedule']) {
   // Validate inputs
   if (!teacherId || typeof teacherId !== 'number' || teacherId <= 0) {
     throw new Error(`Invalid teacher ID: ${teacherId}. Teacher ID must be a positive number.`);

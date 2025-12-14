@@ -5,6 +5,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { BarChart3, Download, CheckCircle, Clock, XCircle, Shield, ArrowRightLeft, UserCheck, TrendingUp, PieChart, BarChart, Activity, Trash2 } from 'lucide-react';
 import { getReports, removeStudent, exportReport } from '@/utils/api';
 import dynamic from 'next/dynamic';
+import type { FullReportData, StudentReportData, ClassReport } from '@/types/report';
 
 // Dynamically import Chart components to avoid SSR issues
 const Bar = dynamic(() => import('@/components/Charts').then((mod) => mod.Bar), {
@@ -21,7 +22,7 @@ export default function ReportsPage() {
   const { settings } = useSettings();
   const [reportType, setReportType] = useState('summary');
   const [period, setPeriod] = useState('daily');
-  const [reportData, setReportData] = useState<any>(null);
+  const [reportData, setReportData] = useState<FullReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<{ show: boolean; message: string; type: string }>({ show: false, message: '', type: '' });
   const [showDiagram, setShowDiagram] = useState(true); // New state for diagram visibility
@@ -658,7 +659,7 @@ export default function ReportsPage() {
                           </tr>
                         </thead>
                         <tbody className={`${settings.theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                          {reportData.students.map((student: any) => (
+                          {reportData.students?.map((student: StudentReportData) => (
                             <tr
                               key={student.id}
                               className={`hover:${settings.theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'} transition-colors`}
@@ -676,7 +677,7 @@ export default function ReportsPage() {
                               <td className="px-4 py-3 text-center">{student.late || 0}</td>
                               <td className="px-4 py-3 text-center">{student.absent || 0}</td>
                               <td className="px-4 py-3 text-center">{student.permission || 0}</td>
-                              <td className="px-4 py-3 text-center">{student.totalAttendanceDays || 0}</td>
+                              <td className="px-4 py-3 text-center">-</td>
                               <td className="px-4 py-3 text-center">
                                 <span
                                   className={`text-xs px-2 py-1 rounded-full font-medium ${student.attendance >= 90
@@ -788,7 +789,7 @@ export default function ReportsPage() {
                           </tr>
                         </thead>
                         <tbody className={`${settings.theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                          {reportData.classReports.map((classReport: any) => (
+                          {reportData.classReports.map((classReport: ClassReport) => (
                             <tr
                               key={classReport.class}
                               className={`hover:${settings.theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'} transition-colors`}
@@ -797,11 +798,11 @@ export default function ReportsPage() {
                                 {classReport.class}
                               </td>
                               <td className="px-4 py-3 text-center">{classReport.totalStudents}</td>
-                              <td className="px-4 py-3 text-center">{classReport.totalPresent || 0}</td>
-                              <td className="px-4 py-3 text-center">{classReport.totalLate || 0}</td>
-                              <td className="px-4 py-3 text-center">{classReport.totalAbsent || 0}</td>
-                              <td className="px-4 py-3 text-center">{classReport.totalPermission || 0}</td>
-                              <td className="px-4 py-3 text-center">{classReport.totalAttendanceDays || 0}</td>
+                              <td className="px-4 py-3 text-center">{classReport.present || 0}</td>
+                              <td className="px-4 py-3 text-center">{classReport.late || 0}</td>
+                              <td className="px-4 py-3 text-center">{classReport.absent || 0}</td>
+                              <td className="px-4 py-3 text-center">{classReport.permission || 0}</td>
+                              <td className="px-4 py-3 text-center">{classReport.totalStudents || 0}</td>
                               <td className="px-4 py-3 text-center">
                                 <span
                                   className={`text-xs px-2 py-1 rounded-full font-medium ${classReport.averageAttendance >= 90

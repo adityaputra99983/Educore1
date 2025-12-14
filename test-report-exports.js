@@ -5,6 +5,7 @@ const fs = require('fs');
 const sampleReportData = {
   success: true,
   reportType: 'summary',
+  performanceData: undefined,
   attendanceStats: {
     totalStudents: 150,
     present: 142,
