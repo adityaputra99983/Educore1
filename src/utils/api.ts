@@ -41,7 +41,7 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
       }
       return text;
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('API request error for', url, ':', error);
     // Provide more detailed error information
     if (error instanceof TypeError && error.message === 'fetch failed') {

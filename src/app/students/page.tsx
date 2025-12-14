@@ -304,9 +304,9 @@ const StudentListPage = () => {
       } else {
         throw new Error(result.message || 'Gagal menghapus data siswa');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error removing student:', error);
-      setNotificationMessage(`Error: ${error.message || 'Gagal menghapus data siswa'}`);
+      setNotificationMessage(`Error: ${(error as Error).message || 'Gagal menghapus data siswa'}`);
       setNotificationType('error');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
@@ -350,9 +350,9 @@ const StudentListPage = () => {
       setNotificationMessage(`${successCount} dari ${selectedStudents.length} data siswa berhasil dihapus`);
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error bulk removing students:', error);
-      setNotificationMessage(`Error: ${error.message || 'Gagal menghapus data siswa'}`);
+      setNotificationMessage(`Error: ${(error as Error).message || 'Gagal menghapus data siswa'}`);
       setNotificationType('error');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
@@ -402,9 +402,9 @@ const StudentListPage = () => {
       } else {
         throw new Error(response.message || 'Gagal memperbarui absensi');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating attendance:', error);
-      setNotificationMessage(`Error: ${error.message || 'Gagal memperbarui absensi'}`);
+      setNotificationMessage(`Error: ${(error as Error).message || 'Gagal memperbarui absensi'}`);
       setNotificationType('error');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);

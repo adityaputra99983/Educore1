@@ -301,14 +301,14 @@ export async function generatePDFReport(reportData: any, reportType: string): Pr
         const pdfDoc = pdfMake.createPdf(docDefinition);
         pdfDoc.getBlob((blob: Blob) => {
           resolve(blob);
-        }, (error: any) => {
+        }, (error: unknown) => {
           reject(error);
         });
       } catch (error) {
         reject(error);
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error generating PDF:', error);
     throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

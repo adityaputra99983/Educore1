@@ -17,6 +17,16 @@ const Pie = dynamic(() => import('@/components/Charts').then((mod) => mod.Pie), 
 });
 
 import type { Teacher, ScheduleItem } from '@/types/teacher';
+import type { 
+  ReportData, 
+  ClassReportData, 
+  DetailedReportData, 
+  ClassReport, 
+  DetailedStudentStats,
+  StudentReportData,
+  FullReportData,
+  PromotionStudentStats
+} from '@/types/report';
 
 // Add stats interface
 interface Stats {
@@ -818,7 +828,7 @@ const ModernAttendanceSystem = () => {
 
     const [reportType, setReportType] = useState('summary');
     const [period, setPeriod] = useState('daily');
-    const [reportData, setReportData] = useState<any>(null);
+    const [reportData, setReportData] = useState<FullReportData | null>(null);
     const [loadingReport, setLoadingReport] = useState(false);
     const [currentDate, setCurrentDate] = useState('');
 
@@ -872,46 +882,46 @@ const ModernAttendanceSystem = () => {
           let csvContent = 'data:text/csv;charset=utf-8,';
 
           // Create CSV based on report type
-          if (reportData.students) {
+          if ((reportData as FullReportData).students) {
             // Add headers
             csvContent += 'NIS,Nama,Kelas,Hadir,Terlambat,Tidak Hadir,Izin/Sakit,Tingkat Kehadiran,Status Kenaikan\n';
 
             // Add data rows
-            reportData.students.forEach((student: any) => {
+            (reportData as FullReportData).students?.forEach((student: StudentReportData) => {
               csvContent += `${student.nis || ''},${student.name || ''},${student.class || ''},${student.present || 0},${student.late || 0},${student.absent || 0},${student.permission || 0},${student.attendance || 0}%,${student.promotionStatus || ''}\n`;
             });
-          } else if (reportData.classReports) {
+          } else if ((reportData as FullReportData).classReports) {
             // Add headers
             csvContent += 'Kelas,Jumlah Siswa,Hadir,Terlambat,Tidak Hadir,Izin/Sakit,Tingkat Kehadiran,Naik Kelas,Tinggal Kelas,Lulus\n';
 
             // Add data rows
-            reportData.classReports.forEach((classReport: any) => {
+            (reportData as FullReportData).classReports?.forEach((classReport: ClassReport) => {
               csvContent += `${classReport.class || ''},${classReport.totalStudents || 0},${classReport.present || 0},${classReport.late || 0},${classReport.absent || 0},${classReport.permission || 0},${classReport.averageAttendance || 0}%,${classReport.promoted || 0},${classReport.retained || 0},${classReport.graduated || 0}\n`;
             });
-          } else if (reportData.detailedStats) {
+          } else if ((reportData as FullReportData).detailedStats) {
             // Add headers
             csvContent += 'NIS,Nama,Kelas,Status Saat Ini,Status Kenaikan,Kelas Tujuan,Waktu,Tingkat Kehadiran\n';
 
             // Add data rows
-            reportData.detailedStats.forEach((student: any) => {
+            (reportData as FullReportData).detailedStats?.forEach((student: PromotionStudentStats) => {
               csvContent += `${student.nis || ''},${student.name || ''},${student.class || ''},${student.currentStatus || ''},${student.promotionStatus || ''},${student.nextClass || ''},${student.currentTime || ''},${student.attendancePercentage || 0}%\n`;
             });
           } else {
             // Generic export for summary data
             csvContent += 'Kategori,Jumlah\n';
-            if (reportData.attendanceStats) {
-              csvContent += `Total Siswa,${reportData.attendanceStats.totalStudents || 0}\n`;
-              csvContent += `Hadir,${reportData.attendanceStats.present || 0}\n`;
-              csvContent += `Terlambat,${reportData.attendanceStats.late || 0}\n`;
-              csvContent += `Tidak Hadir,${reportData.attendanceStats.absent || 0}\n`;
-              csvContent += `Izin/Sakit,${reportData.attendanceStats.permission || 0}\n`;
-              csvContent += `Tingkat Kehadiran,${reportData.attendanceStats.attendanceRate || 0}%\n`;
+            if ((reportData as FullReportData).attendanceStats) {
+              csvContent += `Total Siswa,${(reportData as FullReportData).attendanceStats?.totalStudents || 0}\n`;
+              csvContent += `Hadir,${(reportData as FullReportData).attendanceStats?.present || 0}\n`;
+              csvContent += `Terlambat,${(reportData as FullReportData).attendanceStats?.late || 0}\n`;
+              csvContent += `Tidak Hadir,${(reportData as FullReportData).attendanceStats?.absent || 0}\n`;
+              csvContent += `Izin/Sakit,${(reportData as FullReportData).attendanceStats?.permission || 0}\n`;
+              csvContent += `Tingkat Kehadiran,${(reportData as FullReportData).attendanceStats?.attendanceRate || 0}%\n`;
             }
-            if (reportData.promotionStats) {
-              csvContent += `Naik Kelas,${reportData.promotionStats.promoted || 0}\n`;
-              csvContent += `Tinggal Kelas,${reportData.promotionStats.retained || 0}\n`;
-              csvContent += `Lulus,${reportData.promotionStats.graduated || 0}\n`;
-              csvContent += `Belum Ditentukan,${reportData.promotionStats.undecided || 0}\n`;
+            if ((reportData as FullReportData).promotionStats) {
+              csvContent += `Naik Kelas,${(reportData as FullReportData).promotionStats?.promoted || 0}\n`;
+              csvContent += `Tinggal Kelas,${(reportData as FullReportData).promotionStats?.retained || 0}\n`;
+              csvContent += `Lulus,${(reportData as FullReportData).promotionStats?.graduated || 0}\n`;
+              csvContent += `Belum Ditentukan,${(reportData as FullReportData).promotionStats?.undecided || 0}\n`;
             }
           }
 
@@ -1104,71 +1114,7 @@ const ModernAttendanceSystem = () => {
             )}
 
             {/* Charts */}
-            {reportData.chartData && (
-              <div className={`rounded-2xl p-6 ${settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-800 border border-gray-100'} shadow-lg`}>
-                <h3 className={`text-lg font-bold mb-4 ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Visualisasi Data</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className={`text-md font-semibold mb-3 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Statistik Kehadiran</h4>
-                    <div className="h-64">
-                      <Bar
-                        data={reportData.chartData}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: {
-                              labels: {
-                                color: settings.theme === 'dark' ? '#D1D5DB' : '#374151'
-                              }
-                            }
-                          },
-                          scales: {
-                            x: {
-                              ticks: {
-                                color: settings.theme === 'dark' ? '#9CA3AF' : '#6B7280'
-                              },
-                              grid: {
-                                color: settings.theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                              }
-                            },
-                            y: {
-                              ticks: {
-                                color: settings.theme === 'dark' ? '#9CA3AF' : '#6B7280'
-                              },
-                              grid: {
-                                color: settings.theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className={`text-md font-semibold mb-3 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Distribusi Status</h4>
-                    <div className="h-64">
-                      <Pie
-                        data={reportData.chartData}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: {
-                              position: 'right',
-                              labels: {
-                                color: settings.theme === 'dark' ? '#D1D5DB' : '#374151',
-                                padding: 15
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Removed chartData references since they don't exist in FullReportData */}
 
             {/* Detailed Data Tables */}
             {reportData.students && (
@@ -1191,7 +1137,7 @@ const ModernAttendanceSystem = () => {
                         </tr>
                       </thead>
                       <tbody className={`${settings.theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                        {reportData.students.map((student: any) => (
+                        {reportData.students.map((student: StudentReportData) => (
                           <tr key={student.id} className={`hover:${settings.theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'} transition-colors`}>
                             <td className={`px-4 py-3 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{student.nis}</td>
                             <td className={`px-4 py-3 font-medium ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{student.name}</td>
@@ -1255,7 +1201,7 @@ const ModernAttendanceSystem = () => {
                         </tr>
                       </thead>
                       <tbody className={`${settings.theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                        {reportData.classReports.map((classReport: any) => (
+                        {reportData.classReports.map((classReport: ClassReport) => (
                           <tr key={classReport.class} className={`hover:${settings.theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'} transition-colors`}>
                             <td className={`px-4 py-3 font-medium ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{classReport.class}</td>
                             <td className="px-4 py-3 text-center">{classReport.totalStudents}</td>
@@ -1350,7 +1296,7 @@ const ModernAttendanceSystem = () => {
                         </tr>
                       </thead>
                       <tbody className={`${settings.theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                        {reportData.detailedStats.map((student: any) => (
+                        {reportData.detailedStats.map((student: PromotionStudentStats) => (
                           <tr key={student.id} className={`hover:${settings.theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'} transition-colors`}>
                             <td className={`px-4 py-3 ${settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{student.nis}</td>
                             <td className={`px-4 py-3 font-medium ${settings.theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{student.name}</td>

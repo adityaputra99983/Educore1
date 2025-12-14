@@ -129,13 +129,13 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
         } else {
           setError('Student not found');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error fetching student:', err);
         // Provide more user-friendly error messages
-        if (err.message && err.message.includes('connect')) {
+        if (err instanceof Error && err.message && err.message.includes('connect')) {
           setError('Unable to connect to the server. Please make sure the development server is running.');
         } else {
-          setError(err.message || 'Failed to load student details');
+          setError(err instanceof Error ? err.message : 'Failed to load student details');
         }
       } finally {
         setLoading(false);
@@ -187,10 +187,10 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
         setShowNotification(true);
         setTimeout(() => setShowNotification(false), 5000);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating attendance:', err);
       // Show error notification
-      setNotificationMessage(err.message || 'Gagal menyimpan absensi');
+      setNotificationMessage(err instanceof Error ? err.message : 'Gagal menyimpan absensi');
       setNotificationType('error');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 5000);
@@ -293,9 +293,9 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
       // Show notification
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error adding violation:', err);
-      setError(err.message || 'Failed to add violation');
+      setError(err instanceof Error ? err.message : 'Failed to add violation');
     }
   };
 
@@ -331,9 +331,9 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
       // Show notification
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error adding achievement:', err);
-      setError(err.message || 'Failed to add achievement');
+      setError(err instanceof Error ? err.message : 'Failed to add achievement');
     }
   };
 
@@ -372,9 +372,9 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
       } else {
         setError(response.message || 'Failed to update promotion status');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating promotion status:', err);
-      setError(err.message || 'Failed to update promotion status');
+      setError(err instanceof Error ? err.message : 'Failed to update promotion status');
     }
   };
 
@@ -409,9 +409,9 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
       } else {
         setError(response.message || 'Failed to update class');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating class:', err);
-      setError(err.message || 'Failed to update class');
+      setError(err instanceof Error ? err.message : 'Failed to update class');
     }
   };
 
@@ -441,11 +441,11 @@ const StudentDetailPage: React.FC<{ params: Promise<{ id: string }> }> = ({ para
       } else {
         throw new Error(result.message || 'Gagal menghapus data siswa');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting student:', err);
       // Show error notification
       setShowNotification(true);
-      setNotificationMessage(err.message || 'Gagal menghapus data siswa');
+      setNotificationMessage(err instanceof Error ? err.message : 'Gagal menghapus data siswa');
       setNotificationType('error');
       setTimeout(() => setShowNotification(false), 5000);
     } finally {

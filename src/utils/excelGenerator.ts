@@ -49,7 +49,7 @@ export async function generateExcelReport(reportData: any, reportType: string): 
     // Generate and return as blob
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     return new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error generating Excel:', error);
     throw new Error(`Failed to generate Excel: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

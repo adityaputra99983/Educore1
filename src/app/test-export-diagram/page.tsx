@@ -74,9 +74,10 @@ const TestExportDiagramPage = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       showNotification(`PDF laporan ${reportType} berhasil diunduh!`, 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error exporting PDF:', error);
-      showNotification('Error mengekspor PDF: ' + (error.message || 'Unknown error'), 'error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showNotification('Error mengekspor PDF: ' + errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -97,9 +98,10 @@ const TestExportDiagramPage = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       showNotification(`Excel laporan ${reportType} berhasil diunduh!`, 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error exporting Excel:', error);
-      showNotification('Error mengekspor Excel: ' + (error.message || 'Unknown error'), 'error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showNotification('Error mengekspor Excel: ' + errorMessage, 'error');
     } finally {
       setLoading(false);
     }

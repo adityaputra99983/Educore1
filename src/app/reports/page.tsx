@@ -36,9 +36,9 @@ export default function ReportsPage() {
       } else {
         showNotification('Failed to generate report: ' + (data.error || 'Unknown error'), 'error');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating report:', error);
-      showNotification('Error generating report: ' + (error.message || 'Unknown error'), 'error');
+      showNotification('Error generating report: ' + (error instanceof Error ? error.message : 'Unknown error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -59,13 +59,13 @@ export default function ReportsPage() {
         } else {
           showNotification(result.message || 'Error exporting report', 'error');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error exporting report:', error);
-        showNotification('Error exporting report: ' + (error.message || 'Unknown error'), 'error');
+        showNotification('Error exporting report: ' + (error instanceof Error ? error.message : 'Unknown error'), 'error');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error exporting report:', error);
-      showNotification('Error exporting report: ' + (error.message || 'Unknown error'), 'error');
+      showNotification('Error exporting report: ' + (error instanceof Error ? error.message : 'Unknown error'), 'error');
     }
   };
 
@@ -97,9 +97,9 @@ export default function ReportsPage() {
       } else {
         showNotification('Gagal menghapus siswa: ' + response.error, 'error');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting student:', error);
-      showNotification('Terjadi kesalahan saat menghapus siswa: ' + (error.message || 'Unknown error'), 'error');
+      showNotification('Terjadi kesalahan saat menghapus siswa: ' + (error instanceof Error ? error.message : 'Unknown error'), 'error');
     }
   };
 

@@ -52,12 +52,29 @@ const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6'];
 const PROMOTION_COLORS = ['#10B981', '#EF4444', '#3B82F6', '#6B7280'];
 const PERFORMANCE_COLORS = ['#10B981', '#84cc16', '#F59E0B', '#EF4444'];
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+// Define proper types for the tooltip props
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    color?: string;
+    name?: string;
+    value?: number | string;
+  }>;
+  label?: string;
+}
+
+interface EntryProps {
+  color?: string;
+  name?: string;
+  value?: number | string;
+}
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
         <p className="font-medium text-gray-900 dark:text-white">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: EntryProps, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
             {entry.name}: <span className="font-bold">{entry.value}</span>
           </p>
