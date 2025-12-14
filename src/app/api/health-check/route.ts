@@ -67,9 +67,9 @@ export async function GET() {
       errorName = error.name;
       errorStack = error.stack;
       
-      // Try to extract code if it exists
-      if ('code' in error && typeof (error as any).code === 'string') {
-        errorCode = (error as any).code;
+      // Try to extract code if it exists - using safer type checking
+      if ('code' in error && typeof error.code === 'string') {
+        errorCode = error.code;
       }
     }
     

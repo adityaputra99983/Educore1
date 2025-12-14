@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '../../../lib/db';
-import Student, { type IStudent } from '../../../models/Student';
+import dbConnect from '../../../../lib/db';
+import Student, { type IStudent } from '../../../../models/Student';
 
 // Define interfaces for our data structures
 interface ClassReport {
@@ -101,21 +101,12 @@ export async function GET(request: Request) {
           mostAbsent: [...students].sort((a: IStudent, b: IStudent) => b.absent - a.absent).slice(0, 5)
         };
 
-<<<<<<< HEAD
-    const updateData: Record<string, unknown> = {
-      promotionStatus,
-      // We need to fetch the student first to know the current class for previousClass, 
-      // or we can just use aggregation pipeline update if we want to be atomic, 
-      // but simple findOneAndUpdate is easier.
-    };
-=======
         return NextResponse.json({
           success: true,
           reportType: 'performance',
           attendanceStats,
           performanceData
         });
->>>>>>> 896a80504434e9e999ef975be0fd67a99b33edb0
 
       case 'detailed':
         // Enhanced detailed report with attendance and promotion data
@@ -283,13 +274,8 @@ export async function GET(request: Request) {
           error: 'Invalid report type'
         }, { status: 400 });
     }
-<<<<<<< HEAD
   } catch (error: unknown) {
-    console.error('Error in PUT /api/students/promotion:', error);
-=======
-  } catch (error) {
     console.error('Error in GET /api/reports:', error);
->>>>>>> 896a80504434e9e999ef975be0fd67a99b33edb0
     return NextResponse.json({
       success: false,
       error: 'Internal Server Error',
@@ -337,7 +323,7 @@ export async function POST(request: Request) {
         pdfMake.vfs = pdfFontsModule.default.pdfMake.vfs;
         
         // Import the PDF generator function
-        const { generatePDFReport } = await import('../../../utils/pdfGenerator');
+        const { generatePDFReport } = await import('../../../../utils/pdfGenerator');
         
         // Generate the PDF
         const blob = await generatePDFReport(data, reportType);
@@ -370,7 +356,7 @@ export async function POST(request: Request) {
     } else if (format === 'excel') {
       try {
         // Import the Excel generator function
-        const { generateExcelReport } = await import('../../../utils/excelGenerator');
+        const { generateExcelReport } = await import('../../../../utils/excelGenerator');
         
         // Generate the Excel file
         const blob = await generateExcelReport(data, reportType);
