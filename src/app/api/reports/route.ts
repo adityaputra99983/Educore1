@@ -68,7 +68,7 @@ async function calculateStudentCategories() {
 // GET /api/reports - Generate reports
 export async function GET(request: Request) {
   try {
-    await dbConnect();
+    const db = await dbConnect();
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'summary';
     const period = searchParams.get('period') || 'daily';
@@ -293,6 +293,7 @@ export async function GET(request: Request) {
 // POST /api/reports - Export reports (PDF or Excel)
 export async function POST(request: Request) {
   try {
+    const db = await dbConnect();
     const body = await request.json();
     const { format, reportType, data } = body;
 

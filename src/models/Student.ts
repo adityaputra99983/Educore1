@@ -52,7 +52,7 @@ const StudentSchema: Schema = new Schema({
     type: {
         type: String,
         enum: ['existing', 'new', 'transfer'],
-        default: 'existing'
+        default: 'new' // Changed default to 'new' to match frontend expectations
     },
     violations: { type: Number, default: 0 },
     achievements: { type: Number, default: 0 },

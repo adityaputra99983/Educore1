@@ -44,7 +44,7 @@ async function calculateStudentCategories() {
 // GET /api/attendance - Get attendance records with optional filtering
 export async function GET(request: Request) {
   try {
-    await dbConnect();
+    const db = await dbConnect();
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
     const classFilter = searchParams.get('class');
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
 // PUT /api/attendance - Update attendance status for a student
 export async function PUT(request: Request) {
   try {
-    await dbConnect();
+    const db = await dbConnect();
     const body = await request.json();
     const { studentId, newStatus } = body as { studentId: string; newStatus: string };
 

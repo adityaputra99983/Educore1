@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 export async function GET(request: Request) {
   try {
     console.log('GET /api/students called');
-    await dbConnect();
+    const db = await dbConnect();
     console.log('Database connected');
     const { searchParams } = new URL(request.url);
     const classFilter = searchParams.get('class');
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     console.log('POST /api/students called');
-    await dbConnect();
+    const db = await dbConnect();
     console.log('Database connected');
     
     // Log the raw request to see what we're getting
@@ -109,7 +109,12 @@ export async function POST(request: Request) {
     const newId = lastStudent ? lastStudent.id + 1 : 1;
     console.log('New ID:', newId);
 
-    // Create new student object
+    // Create photo initials from name
+    const createPhotoInitials = (name: string): string => {
+      return name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+    };
+
+    // Create new student object with all required fields
     const newStudentData = {
       id: newId,
       nis: body.nis as string,
@@ -117,22 +122,40 @@ export async function POST(request: Request) {
       class: body.class as string,
       status: 'belum-diisi',
       time: '-',
-      photo: (body.name as string).split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+      photo: createPhotoInitials(body.name as string),
       attendance: 0,
       late: 0,
       absent: 0,
       permission: 0,
-      type: (body.type as string) || 'new'
+      presentCount: 0,
+      lateCount: 0,
+      absentCount: 0,
+      permissionCount: 0,
+      totalAttendanceDays: 0,
+      type: (body.type as string) || 'new',
+      violations: 0,
+      achievements: 0,
+      promotionStatus: 'belum-ditetapkan',
+      graduationStatus: 'belum-lulus'
     };
     
     console.log('Creating student with data:', newStudentData);
     
-    const newStudent = await Student.create(newStudentData);
-    console.log('Student created successfully:', newStudent);
+    const newStudent = new Student(newStudentData);
+    const savedStudent = await newStudent.save();
+    console.log('Student created successfully:', savedStudent);
 
-    return NextResponse.json({ success: true, student: newStudent }, { status: 201 });
+    return NextResponse.json({ success: true, student: savedStudent }, { status: 201 });
   } catch (error: unknown) {
     console.error('Error in POST /api/students:', error);
+    // Return more detailed error information
+    if (error instanceof Error) {
+      return NextResponse.json({ 
+        error: 'Internal Server Error', 
+        message: error.message,
+        stack: error.stack
+      }, { status: 500 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -68,62 +68,77 @@ async function dbConnect() {
         throw error;
     }
 
-    if (cached.conn) {
-        logConnectionEvent('Using cached connection');
+    // Check if we're already connected
+    if (cached.conn && mongoose.connection.readyState === 1) {
+        logConnectionEvent('Using existing connection');
         return cached.conn;
     }
 
-    if (!cached.promise) {
-        logConnectionEvent('Creating new connection promise');
-        
-        // Enhanced options for better Vercel compatibility with detailed configuration
-        const opts = {
-            bufferCommands: false,
-            // Connection timeout settings for serverless environments
-            serverSelectionTimeoutMS: 10000, // Increased timeout for variable network conditions
-            socketTimeoutMS: 45000,
-            // Retry configuration for better reliability
-            maxIdleTimeMS: 30000,
-            connectTimeoutMS: 10000,
-            // Connection pool settings optimized for serverless
-            minPoolSize: 0, // Minimum number of sockets to keep open
-            maxPoolSize: 10, // Maximum number of sockets to keep open
-            retryWrites: true,
-            // Additional options for better error handling
-            appName: 'NOAH-Vercel-App'
-        };
-
-        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-            logConnectionEvent('Connection established successfully');
-            return mongoose;
-        }).catch((error) => {
-            logConnectionEvent('Connection attempt failed', { 
-                error: error instanceof Error ? error.message : 'Unknown error',
-                stack: error instanceof Error ? error.stack : undefined
+    // If we have a promise, wait for it to resolve
+    if (cached.promise) {
+        logConnectionEvent('Waiting for existing connection promise');
+        try {
+            cached.conn = await cached.promise;
+            logConnectionEvent('Connection promise resolved');
+            return cached.conn;
+        } catch (e) {
+            logConnectionEvent('Connection promise failed', { 
+                error: e instanceof Error ? e.message : 'Unknown error'
             });
-            
-            // Enhanced error handling with specific error types
-            if (error instanceof mongoose.Error) {
-                throw new DatabaseConnectionError(
-                    `Mongoose error: ${error.message}`,
-                    'MONGOOSE_ERROR',
-                    { name: error.name, message: error.message }
-                );
-            } else if (error instanceof Error) {
-                throw new DatabaseConnectionError(
-                    `Connection error: ${error.message}`,
-                    'CONNECTION_ERROR',
-                    { name: error.name, message: error.message }
-                );
-            } else {
-                throw new DatabaseConnectionError(
-                    'Unknown connection error occurred',
-                    'UNKNOWN_ERROR',
-                    { originalError: error }
-                );
-            }
-        });
+            cached.promise = null;
+            throw e;
+        }
     }
+
+    logConnectionEvent('Creating new connection promise');
+    
+    // Enhanced options for better Vercel compatibility with detailed configuration
+    const opts = {
+        bufferCommands: false,
+        // Connection timeout settings for serverless environments
+        serverSelectionTimeoutMS: 15000, // Increased timeout for variable network conditions
+        socketTimeoutMS: 45000,
+        // Retry configuration for better reliability
+        maxIdleTimeMS: 30000,
+        connectTimeoutMS: 15000,
+        // Connection pool settings optimized for serverless
+        minPoolSize: 0, // Minimum number of sockets to keep open
+        maxPoolSize: 10, // Maximum number of sockets to keep open
+        retryWrites: true,
+        // Additional options for better error handling
+        appName: 'NOAH-Vercel-App'
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+        logConnectionEvent('Connection established successfully');
+        return mongoose;
+    }).catch((error) => {
+        logConnectionEvent('Connection attempt failed', { 
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
+        });
+        
+        // Enhanced error handling with specific error types
+        if (error instanceof mongoose.Error) {
+            throw new DatabaseConnectionError(
+                `Mongoose error: ${error.message}`,
+                'MONGOOSE_ERROR',
+                { name: error.name, message: error.message }
+            );
+        } else if (error instanceof Error) {
+            throw new DatabaseConnectionError(
+                `Connection error: ${error.message}`,
+                'CONNECTION_ERROR',
+                { name: error.name, message: error.message }
+            );
+        } else {
+            throw new DatabaseConnectionError(
+                'Unknown connection error occurred',
+                'UNKNOWN_ERROR',
+                { originalError: error }
+            );
+        }
+    });
 
     try {
         cached.conn = await cached.promise;
