@@ -2,6 +2,17 @@
 
 import type { StudentReportData, ClassReport, PromotionStudentStats, ReportData } from '@/types/report';
 
+// Add a helper to safely import modules
+async function safeImport(modulePromise: Promise<any>): Promise<any> {
+  try {
+    const module = await modulePromise;
+    return module.default || module;
+  } catch (error) {
+    console.error('Error importing module:', error);
+    throw new Error(`Failed to import module: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 /**
  * Generate an Excel report using xlsx with modern styling
  * @param reportData The report data to include in the Excel file
@@ -10,9 +21,9 @@ import type { StudentReportData, ClassReport, PromotionStudentStats, ReportData 
  */
 export async function generateExcelReport(reportData: ReportData, reportType: string): Promise<Blob> {
   try {
-    // Dynamically import xlsx to avoid SSR issues
-    const xlsxModule = await import('xlsx');
-    const XLSX = xlsxModule.default || xlsxModule;
+    // Dynamically import xlsx to avoid SSR issues with better error handling
+    const xlsxModule = await safeImport(import('xlsx'));
+    const XLSX = xlsxModule;
     
     // Create workbook with better styling
     const wb = XLSX.utils.book_new();

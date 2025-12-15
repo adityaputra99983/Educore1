@@ -4,16 +4,17 @@ async function testFixedReportsApi() {
   let vfsFonts = null;
 
   try {
-    // Dynamically import pdfMake and vfs_fonts on the server side
+    // Dynamically import pdfMake and vfs_fonts on the server side with type-safe handling
     const pdfMakeModule = await import('pdfmake/build/pdfmake.js');
     const vfsModule = await import('pdfmake/build/vfs_fonts.js');
     
-    pdfMake = pdfMakeModule.default || pdfMakeModule;
-    vfsFonts = vfsModule.default || vfsModule;
+    pdfMake = 'default' in pdfMakeModule ? pdfMakeModule.default : pdfMakeModule;
+    vfsFonts = 'default' in vfsModule ? vfsModule.default : vfsModule;
     
-    // Configure vfs
+    // Configure vfs safely
+    // @ts-ignore - pdfmake types are inconsistent across versions
     if (pdfMake && vfsFonts) {
-      pdfMake.vfs = vfsFonts.default || vfsFonts;
+      pdfMake.vfs = vfsFonts.pdfMake?.vfs || vfsFonts.vfs || vfsFonts;
     }
     
     console.log('pdfMake initialized successfully');

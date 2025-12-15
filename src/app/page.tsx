@@ -2,15 +2,51 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login submission
-    console.log('Logging in...');
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token in localStorage for client-side usage
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userRole', data.user.role);
+        
+        // Redirect based on user role
+        if (data.user.role === 'teacher') {
+          router.push('/simaka');
+        } else {
+          router.push('/simaka');
+        }
+      } else {
+        setError(data.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,10 +69,16 @@ export default function Home() {
           className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
         >
           <div className="py-4 px-8 bg-emerald-600 text-white text-center">
-            <h2 className="text-xl font-semibold">Login</h2>
+            <h2 className="text-xl font-semibold">Secure Login</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8">
+            {error && (
+              <div className="mb-4 p-3 bg-red-900 text-red-200 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
             <div className="mb-6">
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address
@@ -71,9 +113,12 @@ export default function Home() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-medium transition-colors"
+              disabled={loading}
+              className={`w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-medium transition-colors ${
+                loading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </motion.button>
 
             <div className="mt-6 text-center">
@@ -91,6 +136,7 @@ export default function Home() {
           className="mt-8 text-center text-gray-500 text-sm"
         >
           <p>© 2023 SMP Islam Namira. All rights reserved.</p>
+          <p className="mt-1 text-xs text-gray-600">Secure Authentication System</p>
         </motion.div>
       </div>
     </div>

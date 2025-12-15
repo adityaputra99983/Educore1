@@ -1,14 +1,18 @@
 // Debug script to see what's available in pdfMake
 async function debugPdfMake() {
   try {
-    // Dynamically import pdfMake and vfs_fonts on the server side
+    // Dynamically import pdfMake and vfs_fonts on the server side with type-safe handling
     // @ts-ignore
     const pdfMakeModule = await import('pdfmake/build/pdfmake.js');
     // @ts-ignore
     const vfsModule = await import('pdfmake/build/vfs_fonts.js');
     
-    const pdfMake = pdfMakeModule.default || pdfMakeModule;
-    const vfsFonts = vfsModule.default || vfsModule;
+    const pdfMake = 'default' in pdfMakeModule ? pdfMakeModule.default : pdfMakeModule;
+    const vfsFonts = 'default' in vfsModule ? vfsModule.default : vfsModule;
+    
+    // Configure vfs safely
+    // @ts-ignore - pdfmake types are inconsistent across versions
+    pdfMake.vfs = vfsFonts.pdfMake?.vfs || vfsFonts.vfs || vfsFonts;
     
     console.log('pdfMake keys:', Object.keys(pdfMake));
     console.log('pdfMake typeof:', typeof pdfMake);

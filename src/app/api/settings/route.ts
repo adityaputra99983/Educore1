@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
 import Settings from '../../../models/Settings';
 
+export const runtime = 'nodejs';
+
 // GET /api/settings - Get system settings
 export async function GET() {
   try {

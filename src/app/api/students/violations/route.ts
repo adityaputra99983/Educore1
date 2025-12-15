@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../lib/db';
 import Student from '../../../../models/Student';
 
+export const runtime = 'nodejs';
+
 // GET /api/students/violations - Get all students with violations data
 export async function GET() {
   try {

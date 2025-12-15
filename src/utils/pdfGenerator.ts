@@ -45,6 +45,21 @@ function formatDate(date: Date | string): string {
   return date.toLocaleDateString('id-ID');
 }
 
+// Add a helper to safely import modules
+async function safeImport(modulePromise: Promise<any>): Promise<any> {
+  try {
+    const module = await modulePromise;
+    // Handle different module export formats
+    if (module.default) {
+      return module.default;
+    }
+    return module;
+  } catch (error) {
+    console.error('Error importing module:', error);
+    throw new Error(`Failed to import module: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 /**
  * Generate a PDF report using pdfmake with modern styling
  * @param reportData The report data to include in the PDF
@@ -53,12 +68,17 @@ function formatDate(date: Date | string): string {
  */
 export async function generatePDFReport(reportData: any, reportType: string): Promise<Blob> {
   try {
-    // Dynamically import pdfmake to avoid SSR issues
-    const pdfMakeModule = await import('pdfmake/build/pdfmake');
-    const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+    // Dynamically import pdfmake to avoid SSR issues with better error handling
+    const pdfMakeModule = await safeImport(import('pdfmake/build/pdfmake'));
+    const pdfFontsModule = await safeImport(import('pdfmake/build/vfs_fonts'));
     
-    const pdfMake = pdfMakeModule.default;
-    pdfMake.vfs = pdfFontsModule.default.pdfMake.vfs;
+    const pdfMake = pdfMakeModule.default || pdfMakeModule;
+    // Use the same pattern as in the API route with type safety
+    const vfsFonts = 'default' in pdfFontsModule ? pdfFontsModule.default : pdfFontsModule;
+    
+    // Assign vfs property safely
+    // @ts-ignore - pdfmake types are inconsistent across versions
+    pdfMake.vfs = vfsFonts.pdfMake?.vfs || vfsFonts.vfs || vfsFonts;
     
     // Define the document structure based on report type with enhanced styling
     const docDefinition: any = {

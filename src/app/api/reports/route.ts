@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '../../../lib/db';
-import Student, { type IStudent } from '../../../models/Student';
+import Student from '../../../models/Student';
+import type { FlattenMaps } from 'mongoose';
+import type { IStudent } from '../../../models/Student';
+
+// Define type for lean student documents
+type LeanStudent = FlattenMaps<IStudent> & { _id: mongoose.Types.ObjectId; __v: number };
 
 // Define interfaces for our data structures
 interface ClassReport {
@@ -76,7 +82,7 @@ export async function GET(request: Request) {
       }, { status: 400 });
     }
 
-    const students = await Student.find({}).lean();
+    const students = await Student.find({}).lean() as LeanStudent[];
     const attendanceStats = await calculateAttendanceStats();
     const studentCategories = await calculateStudentCategories();
 
@@ -93,12 +99,12 @@ export async function GET(request: Request) {
       case 'performance':
         // Calculate performance statistics
         const performanceData = {
-          perfectAttendance: students.filter((s: IStudent) => s.attendance === 100).length,
-          highAttendance: students.filter((s: IStudent) => s.attendance >= 90 && s.attendance < 100).length,
-          mediumAttendance: students.filter((s: IStudent) => s.attendance >= 75 && s.attendance < 90).length,
-          lowAttendance: students.filter((s: IStudent) => s.attendance < 75).length,
-          mostLate: [...students].sort((a: IStudent, b: IStudent) => b.late - a.late).slice(0, 5),
-          mostAbsent: [...students].sort((a: IStudent, b: IStudent) => b.absent - a.absent).slice(0, 5)
+          perfectAttendance: students.filter((s: LeanStudent) => s.attendance === 100).length,
+          highAttendance: students.filter((s: LeanStudent) => s.attendance >= 90 && s.attendance < 100).length,
+          mediumAttendance: students.filter((s: LeanStudent) => s.attendance >= 75 && s.attendance < 90).length,
+          lowAttendance: students.filter((s: LeanStudent) => s.attendance < 75).length,
+          mostLate: [...students].sort((a: LeanStudent, b: LeanStudent) => b.late - a.late).slice(0, 5),
+          mostAbsent: [...students].sort((a: LeanStudent, b: LeanStudent) => b.absent - a.absent).slice(0, 5)
         };
 
         return NextResponse.json({
@@ -113,7 +119,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: true,
           reportType: 'detailed',
-          students: students.map((student: IStudent) => ({
+          students: students.map((student: LeanStudent) => ({
             id: student.id,
             nis: student.nis,
             name: student.name,
@@ -135,7 +141,7 @@ export async function GET(request: Request) {
       case 'class':
         // Enhanced class report with detailed statistics
         const classReports: Record<string, ClassReport> = {};
-        students.forEach((student: IStudent) => {
+        students.forEach((student: LeanStudent) => {
           if (!classReports[student.class]) {
             classReports[student.class] = {
               class: student.class,
@@ -213,14 +219,14 @@ export async function GET(request: Request) {
       case 'promotion':
         // Enhanced promotion report with detailed statistics
         const promotionStats = {
-          promoted: students.filter((s: IStudent) => s.promotionStatus === 'naik').length,
-          retained: students.filter((s: IStudent) => s.promotionStatus === 'tinggal').length,
-          graduated: students.filter((s: IStudent) => s.promotionStatus === 'lulus').length,
-          undecided: students.filter((s: IStudent) => !s.promotionStatus || s.promotionStatus === 'belum-ditetapkan').length
+          promoted: students.filter((s: LeanStudent) => s.promotionStatus === 'naik').length,
+          retained: students.filter((s: LeanStudent) => s.promotionStatus === 'tinggal').length,
+          graduated: students.filter((s: LeanStudent) => s.promotionStatus === 'lulus').length,
+          undecided: students.filter((s: LeanStudent) => !s.promotionStatus || s.promotionStatus === 'belum-ditetapkan').length
         };
 
         // Detailed student stats for promotion
-        const detailedStats = students.map((student: IStudent) => ({
+        const detailedStats = students.map((student: LeanStudent) => ({
           id: student.id,
           nis: student.nis,
           name: student.name,
@@ -250,7 +256,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: true,
           reportType: 'attendance',
-          students: students.map((student: IStudent) => ({
+          students: students.map((student: LeanStudent) => ({
             id: student.id,
             nis: student.nis,
             name: student.name,
@@ -319,8 +325,13 @@ export async function POST(request: Request) {
         const pdfMakeModule = await import('pdfmake/build/pdfmake');
         const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
         
-        const pdfMake = pdfMakeModule.default;
-        pdfMake.vfs = pdfFontsModule.default.pdfMake.vfs;
+        // Handle different module export formats with type safety
+        const pdfMake = 'default' in pdfMakeModule ? pdfMakeModule.default : pdfMakeModule;
+        const vfsFonts = 'default' in pdfFontsModule ? pdfFontsModule.default : pdfFontsModule;
+        
+        // Assign vfs property safely
+        // @ts-ignore - pdfmake types are inconsistent across versions
+        pdfMake.vfs = vfsFonts.pdfMake?.vfs || vfsFonts.vfs || vfsFonts;
         
         // Import the PDF generator function
         const { generatePDFReport } = await import('../../../utils/pdfGenerator');
@@ -401,3 +412,5 @@ export async function POST(request: Request) {
     }, { status: 500 });
   }
 }
+
+export const runtime = 'nodejs';

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
 import Student from '../../../models/Student';
 
+export const runtime = 'nodejs';
+
 // GET /api/students - Get all students with optional filtering
 export async function GET(request: Request) {
   try {

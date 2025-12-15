@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../lib/db';
 import Student from '../../../../models/Student';
 
+export const runtime = 'nodejs';
+
 // GET /api/students/[id] - Get a specific student by ID with detailed information
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {

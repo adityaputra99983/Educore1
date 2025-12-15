@@ -13,15 +13,25 @@ interface MongooseCache {
     promise: Promise<typeof mongoose> | null;
 }
 
+// Use a more compatible approach for accessing global variables in Turbopack
 declare global {
     var mongoose: MongooseCache;
 }
 
-let cached = global.mongoose;
+const getCached = (): MongooseCache => {
+    if (typeof global === 'undefined') {
+        // Fallback for environments where global is not available
+        return { conn: null, promise: null };
+    }
+    
+    if (!(global as any).mongoose) {
+        (global as any).mongoose = { conn: null, promise: null };
+    }
+    
+    return (global as any).mongoose;
+};
 
-if (!cached) {
-    cached = global.mongoose = { conn: null, promise: null };
-}
+let cached = getCached();
 
 // Enhanced logging function for better observability
 const logConnectionEvent = (event: string, details?: any) => {

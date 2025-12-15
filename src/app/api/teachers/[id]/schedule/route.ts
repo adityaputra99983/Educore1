@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../../lib/db';
 import Teacher from '../../../../../models/Teacher';
 
+export const runtime = 'nodejs';
+
 /**
  * GET /api/teachers/[id]/schedule
  * 

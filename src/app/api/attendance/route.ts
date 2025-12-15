@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/db';
 import Student from '../../../models/Student';
 
+export const runtime = 'nodejs';
+
 // Helper function to calculate stats
 async function calculateAttendanceStats() {
   const totalStudents = await Student.countDocuments();

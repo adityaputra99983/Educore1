@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Attempt to connect to the database
@@ -16,13 +18,13 @@ export async function GET() {
       3: 'disconnecting'
     };
     
-    // Get connection details
+    // Get connection details with safer access
     const connectionDetails = {
-      host: connection.connection.host,
-      port: connection.connection.port,
-      name: connection.connection.name,
-      models: Object.keys(connection.models).length,
-      collections: Object.keys(connection.connection.collections).length
+      host: connection.connection.host || 'unknown',
+      port: connection.connection.port || 'unknown',
+      name: connection.connection.name || 'unknown',
+      models: connection.models ? Object.keys(connection.models).length : 0,
+      collections: connection.connection.collections ? Object.keys(connection.connection.collections).length : 0
     };
     
     // Get stats if connected

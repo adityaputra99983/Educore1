@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../lib/db';
 import Student from '../../../../models/Student';
 
+export const runtime = 'nodejs';
+
 // PUT /api/students/class - Update student's current class
 export async function PUT(request: Request) {
   try {

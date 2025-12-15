@@ -4,18 +4,19 @@ async function initializePdfMake() {
   let vfsFonts = null;
   
   try {
-    // Dynamically import pdfMake and vfs_fonts on the server side
+    // Dynamically import pdfMake and vfs_fonts on the server side with type-safe handling
     // @ts-ignore
     const pdfMakeModule = await import('pdfmake/build/pdfmake.js');
     // @ts-ignore
     const vfsModule = await import('pdfmake/build/vfs_fonts.js');
     
-    pdfMake = pdfMakeModule.default || pdfMakeModule;
-    vfsFonts = vfsModule.default || vfsModule;
+    pdfMake = 'default' in pdfMakeModule ? pdfMakeModule.default : pdfMakeModule;
+    vfsFonts = 'default' in vfsModule ? vfsModule.default : vfsModule;
     
-    // Configure vfs
+    // Configure vfs safely
+    // @ts-ignore - pdfmake types are inconsistent across versions
     if (pdfMake && vfsFonts) {
-      pdfMake.vfs = vfsFonts.default || vfsFonts;
+      pdfMake.vfs = vfsFonts.pdfMake?.vfs || vfsFonts.vfs || vfsFonts;
     }
     
     return { pdfMake, vfsFonts };
@@ -33,9 +34,10 @@ async function testPdfGeneration() {
     throw new Error('pdfMake not initialized');
   }
   
-  // Ensure vfs is properly set
+  // Ensure vfs is properly set with type-safe handling
   if (vfsFonts && !pdfMake.vfs) {
-    pdfMake.vfs = vfsFonts.default || vfsFonts;
+    // @ts-ignore - pdfmake types are inconsistent across versions
+    pdfMake.vfs = vfsFonts.pdfMake?.vfs || vfsFonts.vfs || vfsFonts;
   }
   
   // Define fonts properly
