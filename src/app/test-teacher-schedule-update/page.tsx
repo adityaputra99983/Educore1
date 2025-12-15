@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import TeacherScheduleTab from '../components/TeacherScheduleTab';
+import TeacherScheduleTab from '@/app/components/TeacherScheduleTab';
 import type { Settings } from '@/contexts/SettingsContext';
 
 const TestTeacherScheduleUpdate = () => {

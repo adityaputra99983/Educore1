@@ -459,7 +459,7 @@ const StudentListPage = () => {
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center">
               <button
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/simaka')}
                 className={`flex items-center ${settings.theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} mr-4`}
               >
                 <ArrowLeft className="w-5 h-5 mr-1" />
